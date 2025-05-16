@@ -1,13 +1,23 @@
+#ifndef POLIGONO_H
+#define POLIGONO_H
+#include <vector>
+
+struct Punto;
+
 class Poligono {
 protected:
     double area;
     double numLados;
 
 public:
-    Poligono();                      
-    virtual void calcularArea() = 0; // Método puro virtual
-    virtual void print();         
-    double getArea(); 
-    virtual int getNumLados();
+    Poligono() = default;
+    virtual ~Poligono() = default;
+
+    virtual void calcularArea() = 0;  
+    virtual void print() const;        
+
+    double getArea() const;            
+    virtual int getNumLados() const;  
 };
-struct Punto { double x,y; };
+
+#endif
