@@ -7,12 +7,12 @@ using namespace std;
 
 class Circuito {
 private:
-    float tension; // en Voltios
+    float tension;
     vector<Resistencia*> resistencias;
 public:
     Circuito(float v = 0);
     ~Circuito();
-   
+
     void setTension(float v);
     void agregarResistencia(float r);
     void eliminarResistencias();
