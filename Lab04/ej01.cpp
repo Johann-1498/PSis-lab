@@ -45,7 +45,6 @@ bool palabraAdivinada(const char* palabra, const vector<char>& letrasAdivinadas)
 }
 
 int main() {
-
     // Obtenemos la palabra
     char palabra[50];
     cout << "Ingrese la palabra secreta: ";
@@ -71,20 +70,20 @@ int main() {
         letrasAdivinadas.push_back(guess);
         // verificar si la letra esta en la palabra
         if (verificarLetra(palabra, guess)) {
-            cout << "Correcto! La letra '" << guess << "' esta en la palabra." <<
+            cout << "La letra '" << guess << "' esta en la palabra." <<
             endl;
         } else {
             vidas--;
-            cout << "Incorrecto! Te quedan " << vidas << " vidas." << endl;
+            cout << "Mal, te quedan " << vidas << " vidas." << endl;
         }
     }
     // mostrarResultado
     mostrarPalabra(palabra, letrasAdivinadas, false);
     if (vidas > 0) {
-        cout << "¡Felicidades! Has adivinado la palabra: " << palabra <<
+        cout << "Adivinaste la palabra: " << palabra <<
         endl;
     } else {
-        cout << "Lo siento, has perdido. La palabra era: " << palabra <<
+        cout << "Perdiste. La palabra era: " << palabra <<
         endl;
     }
     return 0;

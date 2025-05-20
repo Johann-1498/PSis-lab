@@ -11,7 +11,7 @@ void cargarHabitantes(int complejo[TORRES][PISOS][DEPARTAMENTOS], int modo) {
     int valor_predeterminado = 0;
 
     if (modo == 2) {
-        cout << "Ingrese el número de personas predeterminado por departamento: ";
+        cout << "Ingrese el numero de personas predeterminado por departamento: ";
         cin >> valor_predeterminado;
     } else if (modo == 3) {
         srand(time(0));  // Semilla para números aleatorios
@@ -73,13 +73,13 @@ int main() {
 
     cout << "Seleccione modo de carga de datos:\n";
     cout << "1 - Manual (por departamento)\n";
-    cout << "2 - Automático (valor predeterminado por departamento)\n";
-    cout << "3 - Automático aleatorio (1 a 6 personas por dpto)\n";
-    cout << "Opción: ";
+    cout << "2 - Automatico (valor predeterminado por departamento)\n";
+    cout << "3 - Automatico aleatorio (1 a 6 personas por dpto)\n";
+    cout << "Opcion: ";
     cin >> modo;
 
     if (modo < 1 || modo > 3) {
-        cout << "Modo no válido.\n";
+        cout << "Modo no valido.\n";
         return 1;
     }
 
