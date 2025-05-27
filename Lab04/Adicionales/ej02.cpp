@@ -1,7 +1,6 @@
 #include <iostream>
 using namespace std;
 
-// Función para asignar memoria a una matriz
 int** crearMatriz(int filas, int columnas) {
     int** matriz = new int*[filas];
     for (int i = 0; i < filas; ++i) {
@@ -10,7 +9,7 @@ int** crearMatriz(int filas, int columnas) {
     return matriz;
 }
 
-// Función para liberar memoria de una matriz
+// liberar memoria de una matriz
 void liberarMatriz(int** matriz, int filas) {
     for (int i = 0; i < filas; ++i) {
         delete[] matriz[i];
@@ -18,7 +17,6 @@ void liberarMatriz(int** matriz, int filas) {
     delete[] matriz;
 }
 
-// Función para llenar una matriz con valores
 void llenarMatriz(int** matriz, int filas, int columnas) {
     cout << "Ingrese los elementos de la matriz:" << endl;
     for (int i = 0; i < filas; ++i) {
@@ -59,16 +57,16 @@ void imprimirMatriz(int** matriz, int filas, int columnas) {
 int main() {
     int filas_a, columnas_a, filas_b, columnas_b;
     
-    cout << "Ingrese las dimensiones de la matriz A (filas columnas): ";
+    cout << "Ingrese las dimensiones de la matriz A (filas - columnas): ";
     cin >> filas_a >> columnas_a;
     
-    cout << "Ingrese las dimensiones de la matriz B (filas columnas): ";
+    cout << "Ingrese las dimensiones de la matriz B (filas - columnas): ";
     cin >> filas_b >> columnas_b;
     
     // Verificar si las matrices se pueden multiplicar
     if (columnas_a != filas_b) {
-        cerr << "Error: Las dimensiones de las matrices no son compatibles para multiplicación." << endl;
-        cerr << "El número de columnas de A debe ser igual al número de filas de B." << endl;
+        cerr << "Error: Las dimensiones de las matrices no son compatibles para multiplicaciOn." << endl;
+        cerr << "El numero de columnas de A debe ser igual al numero de filas de B." << endl;
         return 1;
     }
     

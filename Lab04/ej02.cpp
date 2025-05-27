@@ -2,25 +2,19 @@
 using namespace std;
 
 bool verificarPuntoSilla(double** matriz, int filas, int columnas, int fila, int columna) {
-    // Verificar si es el mínimo de su fila
     for (int i = 0; i < columnas; ++i) {
-        if (matriz[fila][i] < matriz[fila][columna]) {
-            return false;
-        }
+        if (matriz[fila][i] < matriz[fila][columna]) return false;
     }
 
-    // Verificar si es el máximo de su columna
     for (int i = 0; i < filas; ++i) {
-        if (matriz[i][columna] > matriz[fila][columna]) {
-            return false;
-        }
+        if (matriz[i][columna] > matriz[fila][columna]) return false;
     }
 
     return true;
 }
 
 void buscarPuntoSilla(double** matriz, int filas, int columnas) {
-    if (matriz == nullptr || filas == 0 || columnas == 0) {
+    if (!matriz || filas == 0 || columnas == 0) {
         cout << "La matriz esta vacía o no tiene dimensiones válidas." << endl;
         return;
     }
@@ -38,55 +32,36 @@ void buscarPuntoSilla(double** matriz, int filas, int columnas) {
     cout << "No se encontro ningun punto de silla en la matriz." << endl;
 }
 
-double** crearMatriz(int filas, int columnas, const double datos[][3]) {
+double** crearMatriz(int filas, int columnas) {
     double** matriz = new double*[filas];
     for (int i = 0; i < filas; ++i) {
         matriz[i] = new double[columnas];
         for (int j = 0; j < columnas; ++j) {
-            matriz[i][j] = datos[i][j];
+            cout << "Ingrese el valor en [" << i + 1 << "][" << j + 1 << "]: ";
+            cin >> matriz[i][j];
         }
     }
     return matriz;
 }
 
 void liberarMatriz(double** matriz, int filas) {
-    for (int i = 0; i < filas; ++i)
-        delete[] matriz[i];
+    for (int i = 0; i < filas; ++i) delete[] matriz[i];
     delete[] matriz;
 }
 
 int main() {
-    const int filas = 3, columnas = 3;
+    int filas, columnas;
 
-    double datos1[3][3] = {
-        {1, 2, 3},
-        {4, 5, 6},
-        {7, 8, 9}
-    };
+    cout << "Ingrese el numero de filas de la matriz: ";
+    cin >> filas;
+    cout << "Ingrese el numero de columnas de la matriz: ";
+    cin >> columnas;
 
-    double datos2[3][3] = {
-        {3, 1, 2},
-        {6, 5, 4},
-        {9, 7, 8}
-    };
+    double** matriz = crearMatriz(filas, columnas);
 
-    double datos3[3][3] = {
-        {13, 1, 2},
-        {6, 15, 4},
-        {9, 7, 18}
-    };
+    buscarPuntoSilla(matriz, filas, columnas);
 
-    double** m1 = crearMatriz(filas, columnas, datos1);
-    double** m2 = crearMatriz(filas, columnas, datos2);
-    double** m3 = crearMatriz(filas, columnas, datos3);
-
-    buscarPuntoSilla(m1, filas, columnas);
-    buscarPuntoSilla(m2, filas, columnas);
-    buscarPuntoSilla(m3, filas, columnas);
-
-    liberarMatriz(m1, filas);
-    liberarMatriz(m2, filas);
-    liberarMatriz(m3, filas);
+    liberarMatriz(matriz, filas);
 
     return 0;
 }

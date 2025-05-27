@@ -3,29 +3,29 @@
 using namespace std;
 
 bool verificarPuntoSilla(unique_ptr<unique_ptr<double[]>[]>& matriz, int filas, int columnas, int fila, int columna) {
-    double* pFila = matriz[fila].get();         // inicio de la fila actual
-    double valor = *(pFila + columna);          // valor del elemento actual (fila, columna)
+    double* pFila = matriz[fila].get();  //matriz[fila]
+    double valor = *(pFila + columna);   // pFila[columna]
 
-    // Verificar si es el mínimo en su fila
-    for (double* pElemento = pFila; pElemento < pFila + columnas; ++pElemento) {
-        if (*pElemento < valor)
-            return false;
+    // Menor de su fila
+    for (int j = 0; j < columnas; ++j) {
+        if (*(pFila + j) < valor) {
+            return false;  
+        }
     }
-
-    // Verificar si es el máximo en su columna
+    // si hay uno mayor
     for (int i = 0; i < filas; ++i) {
-        double* pColumna = matriz[i].get() + columna;  // pColumna apunta al elemento en la columna específica
-        if (*pColumna > valor)
-            return false;
+        double* pColumna = matriz[i].get();  // puntero a fila i
+        if (*(pColumna + columna) > valor) {
+            return false;  
+        }
     }
 
     return true;
 }
 
-// Buscar punto silla usando punteros
 void buscarPuntoSilla(unique_ptr<unique_ptr<double[]>[]>& matriz, int filas, int columnas) {
     for (int i = 0; i < filas; ++i) {
-        double* pFila = matriz[i].get();  // pFila apunta al inicio de la fila actual
+        double* pFila = matriz[i].get();
         for (int j = 0; j < columnas; ++j) {
             if (verificarPuntoSilla(matriz, filas, columnas, i, j)) {
                 cout << "Punto de silla encontrado en (" << i + 1 << ", " << j + 1
@@ -37,6 +37,17 @@ void buscarPuntoSilla(unique_ptr<unique_ptr<double[]>[]>& matriz, int filas, int
     cout << "No se encontro ningun punto de silla en la matriz." << endl;
 }
 
+void llenarMatriz(unique_ptr<unique_ptr<double[]>[]>& matriz, int filas, int columnas) {
+    cout << "Ingrese los elementos de la matriz:" << endl;
+    for (int i = 0; i < filas; ++i) {
+        double* pFila = matriz[i].get();
+        for (int j = 0; j < columnas; ++j) {
+            cout << "Elemento [" << i + 1 << "][" << j + 1 << "]: ";
+            cin >> *(pFila + j);
+        }
+    }
+}
+
 int main() {
     int filas, columnas;
     cout << "Ingrese el numero de filas: ";
@@ -44,23 +55,14 @@ int main() {
     cout << "Ingrese el numero de columnas: ";
     cin >> columnas;
 
-    // Matriz punteros inteligentes
+    // matriz bidimencinal con punteros inteligentes unicos
     unique_ptr<unique_ptr<double[]>[]> matriz(new unique_ptr<double[]>[filas]);
     for (int i = 0; i < filas; ++i) {
         matriz[i] = unique_ptr<double[]>(new double[columnas]);
     }
 
-    //-------------------------------------------------------
-    cout << "Ingrese los elementos de la matriz:" << endl;
-    for (int i = 0; i < filas; ++i) {
-        double* pFila = matriz[i].get();  // pFila apunta al inicio de la fila actual
-        for (int j = 0; j < columnas; ++j) {
-            cout << "Elemento [" << i + 1 << "][" << j + 1 << "]: ";
-            cin >> *(pFila + j);          // acceso usando aritmética de punteros
-        }
-    }
-
-    // Buscar punto silla
+    llenarMatriz(matriz, filas, columnas);
     buscarPuntoSilla(matriz, filas, columnas);
+
     return 0;
 }

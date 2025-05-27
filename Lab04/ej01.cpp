@@ -63,7 +63,7 @@ int main() {
         guess = tolower(guess); // Convertir a minuscula
         // revisar si ya fue adivinada la letra
         if (find(letrasAdivinadas.begin(), letrasAdivinadas.end(), guess) != letrasAdivinadas.end()) {
-            cout << "Ya has adivinado esa letra. Inténtalo de nuevo." << endl;
+            cout << "Ya has adivinado esa letra. Intentalo de nuevo." << endl;
             continue;
         }
         // añadir la letra adivinada a la lista
