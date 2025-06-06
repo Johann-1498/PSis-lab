@@ -81,6 +81,8 @@ bool OddEvenSorter::readFromFile(const std::string& filename) {
     while (infile >> value && list.size() < list.capacity()) {
         list.push_back(value);
     }
+    
+    infile.close();
 
     if (list.size() != list.capacity()) {
         std::cerr << "Error: Expected " << list.capacity() << " values, got " << list.size() << "\n";
