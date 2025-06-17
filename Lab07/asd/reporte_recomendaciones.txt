@@ -1,0 +1,26 @@
+=== REPORTE DE RECOMENDACIONES ===
+
+Usuario base: 1
+Canciones escuchadas: 15
+
+Usuarios similares encontrados: 9
+
+Top recomendaciones:
+------------------------------------------------------------
+Rank | Usuario | Distancia | Pearson | Canc. Compartidas
+------------------------------------------------------------
+   1 |       4 |    0.4714 |   0.945 |                3
+   2 |       7 |    0.6614 |   0.614 |                4
+   3 |       6 |    0.6731 |   0.302 |                8
+   4 |       5 |    0.7638 |   0.097 |                6
+   5 |       2 |    0.7693 |   0.262 |                7
+   6 |       3 |    0.7706 |   0.271 |                8
+   7 |      10 |    0.8089 |  -0.245 |                9
+   8 |       9 |    0.8101 |  -0.272 |                8
+   9 |       8 |    0.9129 |   0.255 |                6
+
+=== CONFIGURACION DEL SISTEMA ===
+Tablas LSH: 3
+Hashes por tabla: 1
+Total canciones en sistema: 31
+Total usuarios en sistema: 10
