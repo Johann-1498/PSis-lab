@@ -1,126 +1,87 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
-#include <random>
-#include <cmath>
+#include "RankingCanciones.h"
+#include "LSH.h"
 
-// Representa un usuario con sus canciones escuchadas
-struct Usuario {
-    std::unordered_set<int> canciones;
-};
+using namespace std;
 
-// LSH simple
-class LSH {
-public:
-    int numHashes, numCanciones;
-    std::vector<std::vector<double>> planos;
-    std::unordered_map<int, std::vector<int>> buckets;
-    std::unordered_map<int, Usuario> usuarios;
-
-    LSH(int numHashes_, int numCanciones_)
-        : numHashes(numHashes_), numCanciones(numCanciones_) {
-        generarPlanosAleatorios();
+// Función que carga datos desde el CSV y actualiza estructuras
+void procesarArchivoCSV(const string& rutaCSV, unordered_map<int, Usuario>& usuarios, unordered_map<int, Cancion>& canciones) {
+    ifstream archivo(rutaCSV);
+    if (!archivo.is_open()) {
+        cerr << "Error, no se puede acceder al archivo" << rutaCSV << endl;
+        return;
     }
 
-    void agregarUsuario(int id, const std::unordered_set<int>& canciones) {
-        usuarios[id] = { canciones };
+    string linea;
+    while (getline(archivo, linea)) {
+        stringstream ss(linea);
+        string campo;
+        int usuarioID, cancionID;
+        double calificacion;
+
+        getline(ss, campo, ',');
+        usuarioID = stoi(campo);
+        getline(ss, campo, ',');
+        cancionID = stoi(campo);
+        getline(ss, campo, ',');
+        calificacion = stod(campo);
+
+        // Registrar canción en usuario
+        usuarios[usuarioID].id = usuarioID;
+        usuarios[usuarioID].cancionesEscuchadas.insert(cancionID);
+
+        // Registrar info en Cancion
+        canciones[cancionID].id = cancionID;
+        canciones[cancionID].cantidadEscuchas++;
+        canciones[cancionID].sumaCalificaciones += calificacion;
     }
 
-    void construirBuckets() {
-        for (const auto& [id, user] : usuarios) {
-            int firma = calcularFirma(user);
-            buckets[firma].push_back(id);
-        }
-    }
+    archivo.close();
+}
 
-    void buscarSimilares(int id) {
-        if (!usuarios.count(id)) {
-            std::cout << "Usuario no encontrado.\n";
-            return;
-        }
-        int firma = calcularFirma(usuarios[id]);
-        auto& candidatos = buckets[firma];
-        std::cout << "\nUsuarios similares a " << id << ":\n";
-        for (int otro : candidatos) {
-            if (otro == id) continue;
-            int comunes = contarCancionesEnComun(usuarios[id], usuarios[otro]);
-            if (comunes > 0) {
-                std::cout << "- Usuario " << otro << " con " << comunes << " canciones en comun\n";
-            }
-        }
-        if (candidatos.size() <= 1) {
-            std::cout << "(No se encontraron usuarios con firmas similares)\n";
-        }
-    }
+// Calcular el ID máximo de canciones para definir espacio en LSH
+int calcularTotalCanciones(const unordered_map<int, Cancion>& canciones) {
+    int maxID = 0;
+    for (const auto& [id, c] : canciones)
+        if (id > maxID) maxID = id;
+    return maxID + 1;
+}
 
-private:
-    void generarPlanosAleatorios() {
-        std::mt19937 gen(std::random_device{}());
-        std::normal_distribution<double> dist(0.0, 1.0);
-        planos.resize(numHashes, std::vector<double>(numCanciones));
-        for (int i = 0; i < numHashes; ++i)
-            for (int j = 0; j < numCanciones; ++j)
-                planos[i][j] = dist(gen);
-    }
+// Ejecuta búsqueda de similares por LSH
+void sistemaRecomendaciones(LSH& agruparUsuarios) {
+    int consultaID;
+    cout << "\n👤 Ingresa ID de usuario para buscar similares (-1 para salir): ";
+    cin >> consultaID;
 
-    int calcularFirma(const Usuario& usuario) {
-        int firma = 0;
-        for (int i = 0; i < numHashes; ++i) {
-            double suma = 0.0;
-            for (int c : usuario.canciones)
-                if (c < numCanciones)
-                    suma += planos[i][c];
-            if (suma > 0)
-                firma |= (1 << i);
-        }
-        return firma;
+    while (consultaID != -1) {
+        agruparUsuarios.buscarSimilares(consultaID);
+        cout << "\n👤 Ingresa otro ID (-1 para salir): ";
+        cin >> consultaID;
     }
-
-    int contarCancionesEnComun(const Usuario& u1, const Usuario& u2) {
-        int count = 0;
-        for (int c : u1.canciones)
-            if (u2.canciones.count(c))
-                ++count;
-        return count;
-    }
-};
+}
 
 int main() {
-    std::ifstream f("large.csv");
-    if (!f) {
-        std::cerr << "No se pudo abrir simple.csv\n";
-        return 1;
-    }
+    unordered_map<int, Usuario> usuarios;
+    unordered_map<int, Cancion> canciones;
 
-    std::unordered_map<int, std::unordered_set<int>> datos;
-    int maxCancion = 0;
-    std::string linea;
-    while (std::getline(f, linea)) {
-        std::istringstream ss(linea);
-        std::string campo;
-        std::getline(ss, campo, ',');
-        int usuarioID = std::stoi(campo);
-        std::getline(ss, campo, ',');
-        int cancionID = std::stoi(campo);
-        datos[usuarioID].insert(cancionID);
-        maxCancion = std::max(maxCancion, cancionID);
-    }
+    // Paso 1: Cargar el archivo CSV
+    string archivo = "large.csv";  // Asegúrate que esté en la misma carpeta
+    procesarArchivoCSV(archivo, usuarios, canciones);
 
-    LSH lsh(5, maxCancion + 1);  // Reducido de 10 a 5 hashes
-    for (const auto& [id, canciones] : datos)
-        lsh.agregarUsuario(id, canciones);
-    lsh.construirBuckets();
+    // Paso 2: Mostrar el ranking de canciones
+    RankingCanciones ranking;
+    ranking.insertarCanciones(canciones);
+    cout << "\n🎶 Canciones mas valoradas:\n";
+    ranking.mostrarTop(5);
 
-    while (true) {
-        std::cout << "\nIngresa ID de usuario para buscar similares (-1 para salir): ";
-        int id;
-        std::cin >> id;
-        if (id == -1) break;
-        lsh.buscarSimilares(id);
-    }
+    // Paso 3: Construir LSH y ejecutar recomendaciones
+    int totalCanciones = calcularTotalCanciones(canciones);
+    LSH agruparUsuarios(5, totalCanciones, usuarios);
+    sistemaRecomendaciones(agruparUsuarios);
 
     return 0;
 }
