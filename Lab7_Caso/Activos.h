@@ -1,185 +1,170 @@
-// Activos.h
 #pragma once
 
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <memory>
 
-static constexpr int COD_SOLES   = 10;
-static constexpr int COD_DOLARES = 11;
-static constexpr int COD_BONO    = 20;
-static constexpr int COD_JOYA    = 30;
+/// Códigos de activos
+enum class CodigoActivo : int {
+    SOLES   = 10,
+    DOLARES = 11,
+    BONO    = 20,
+    JOYA    = 30
+};
 
 class Activo {
-protected:
-    std::string nombre;
-    double valor;
-
 public:
-    explicit Activo(const std::string& nombre_): nombre(nombre_), valor(0.0) {}
     virtual ~Activo() = default;
-
-    virtual void calcularTotal() = 0;
+    virtual void depositar(double monto) = 0;
+    virtual void retirar(double monto)  = 0;
+    virtual double total() const        = 0;
 };
 
 class Moneda : public Activo {
-private:
-    std::unordered_map<int,int> billetes;
-    std::vector<int>            validos;
-
 public:
-
-    explicit Moneda(const std::string& tipoMoneda): Activo(tipoMoneda){
-        if (nombre == "Soles") {
-            validos = {10, 20, 50, 100, 200};
-        } else if (nombre == "Dolares") {
-            validos = {1, 2, 5, 10, 20, 50, 100};
-        } else {
-            throw std::invalid_argument("Moneda desconocida: " + nombre);
+    explicit Moneda(CodigoActivo codigo)
+      : codigo(codigo), valorTotal(0.0)
+    {
+        switch(codigo) {
+            case CodigoActivo::SOLES:
+                validos = {200,100,50,20,10};
+                nombre = "Soles";
+                break;
+            case CodigoActivo::DOLARES:
+                validos = {100,50,20,10,5,2,1};
+                nombre = "Dolares";
+                break;
+            default:
+                throw std::invalid_argument("Código de moneda inválido");
         }
     }
 
-    void agregarMonto(int valor, int cantidad) {
-        if (std::find(validos.begin(), validos.end(), valor) == validos.end()) {
-            throw std::invalid_argument("Denominación inválida para " + nombre);
-        }
-        billetes[valor] += cantidad;
-        calcularTotal();
+    void depositar(double monto) override {
+        distribuirEnBilletes(monto);
     }
 
-    /// Retira monto si hay suficiente (por denominación)
-    void retirarMonto(int valor, int cantidad) {
-        auto it = billetes.find(valor);
-        if (it == billetes.end() || it->second < cantidad) {
-            throw std::runtime_error("Fondos insuficientes en " + nombre);
-        }
-        it->second -= cantidad;
-        calcularTotal();
+    void retirar(double monto) override {
+        if (monto > valorTotal)
+            throw std::runtime_error("Saldo insuficiente en " + nombre);
+        distribuirEnBilletes(-monto);
     }
 
-    /// Devuelve el total acumulado
-    double obtenerTotal() const {
-        return valor;
+    double total() const override {
+        return valorTotal;
     }
 
-    /// Suma todos los billetes y actualiza valor
-    void calcularTotal() override {
-        double suma = 0;
-        for (auto& [v, c] : billetes) {
-            suma += v * c;
+    const std::unordered_map<int,int>& detalleBilletes() const {
+        return billetes;
+    }
+
+private:
+    CodigoActivo codigo;
+    std::string nombre;
+    double valorTotal;
+    std::vector<int> validos;
+    std::unordered_map<int,int> billetes;
+
+    void distribuirEnBilletes(double monto) {
+        double resto = monto;
+        for (int denom : validos) {
+            if (resto == 0.0) break;
+            int disponibilidad = billetes[denom];
+            int cuenta = static_cast<int>(resto) / denom;
+            if (monto < 0) cuenta = std::min(cuenta, disponibilidad);
+            if (cuenta == 0) continue;
+            billetes[denom] += (monto < 0 ? -cuenta : cuenta);
+            resto -= denom * cuenta;
         }
-        valor = suma;
+        if (resto != 0.0)
+            throw std::runtime_error("No se puede distribuir exactamente " + std::to_string(monto) + " en " + nombre);
+        valorTotal = 0;
+        for (auto& [v,c] : billetes)
+            valorTotal += v * c;
     }
 };
 
-/// Activo de tipo Bono: valor fijo
 class Bono : public Activo {
 public:
-    Bono(const std::string& tipoBono, double valorNominal)
-      : Activo(tipoBono)
-    {
-        valor = valorNominal;
+    explicit Bono(double valorUnidad = 1.0)
+      : unidades(0), valorUnidad(valorUnidad)
+    {}
+    void depositar(double monto) override {
+        unidades += static_cast<int>(monto);
     }
-
-    void calcularTotal() override {
-        // no-op: valor ya fijado
+    void retirar(double monto) override {
+        int req = static_cast<int>(monto);
+        if (req > unidades)
+            throw std::runtime_error("Bono insuficiente");
+        unidades -= req;
     }
+    double total() const override {
+        return unidades * valorUnidad;
+    }
+private:
+    int unidades;
+    double valorUnidad;
 };
 
-/// Activo de tipo Joya: valor fijo
 class Joya : public Activo {
 public:
-    Joya(const std::string& nombreJoya, double equivalencia)
-      : Activo(nombreJoya)
-    {
-        valor = equivalencia;
+    explicit Joya(double equivalencia = 1.0)
+      : unidades(0), equivalencia(equivalencia)
+    {}
+    void depositar(double monto) override {
+        unidades += static_cast<int>(monto);
     }
-
-    void calcularTotal() override {
-        // no-op: valor ya fijado
+    void retirar(double monto) override {
+        int req = static_cast<int>(monto);
+        if (req > unidades)
+            throw std::runtime_error("Joya insuficiente");
+        unidades -= req;
     }
+    double total() const override {
+        return unidades * equivalencia;
+    }
+private:
+    int unidades;
+    double equivalencia;
 };
 
-/// Solicitud de activos: clave=código de activo, valor=cantidad a operar
-using SolicitudActivos = std::unordered_map<int,int>;
-
-/// Contenedor de todos los activos de una bóveda
+//-----------------------------Activos totales ----------------------------------------------------------------------
 class Activos {
 private:
-    Moneda               soles;
-    Moneda               dolares;
-    std::vector<Bono>    bonos;
-    std::vector<Joya>    joyas;
-
+    std::unordered_map<CodigoActivo, std::unique_ptr<Activo>> mapa;
 public:
-    Activos()
-      : soles("Soles"), dolares("Dolares") {}
+    Activos() {
+        mapa[CodigoActivo::SOLES]   = std::make_unique<Moneda>(CodigoActivo::SOLES);
+        mapa[CodigoActivo::DOLARES] = std::make_unique<Moneda>(CodigoActivo::DOLARES);
+        mapa[CodigoActivo::BONO]    = std::make_unique<Bono>(1.0);
+        mapa[CodigoActivo::JOYA]    = std::make_unique<Joya>(1.0);
+    }
 
-    /**
-     * Deposita activos según código y cantidad:
-     * - COD_SOLES/COD_DOLARES: suma billetes de valor 1 por cantidad indicada
-     * - COD_BONO: agrega <cantidad> bonos genéricos (valorNominal=0)
-     * - COD_JOYA: agrega <cantidad> joyas genéricas (equivalencia=0)
-     */
-    void depositar(const SolicitudActivos& sol) {
-        for (auto& [codigo, cantidad] : sol) {
-            switch (codigo) {
-                case COD_SOLES:
-                    soles.agregarMonto(1, cantidad);
-                    break;
-                case COD_DOLARES:
-                    dolares.agregarMonto(1, cantidad);
-                    break;
-                case COD_BONO:
-                    for (int i = 0; i < cantidad; ++i)
-                        bonos.emplace_back("Bono", 0.0);
-                    break;
-                case COD_JOYA:
-                    for (int i = 0; i < cantidad; ++i)
-                        joyas.emplace_back("Joya", 0.0);
-                    break;
-                default:
-                    throw std::invalid_argument("Código de activo desconocido");
-            }
+    //código/unidades
+    void depositar(const std::unordered_map<CodigoActivo,double>& sol) {
+        for (auto& [cod, m] : sol) {
+            auto it = mapa.find(cod);
+            if (it == mapa.end())
+                throw std::invalid_argument("Activo no existe");
+            it->second->depositar(m);
         }
     }
 
-    /**
-     * Retira activos según solicitud:
-     * - COD_SOLES/COD_DOLARES: resta billetes de valor 1 por cantidad indicada
-     * - COD_BONO: elimina <cantidad> bonos del vector (si existen)
-     * - COD_JOYA: elimina <cantidad> joyas del vector (si existen)
-     */
-    void retirar(const SolicitudActivos& sol) {
-        for (auto& [codigo, cantidad] : sol) {
-            switch (codigo) {
-                case COD_SOLES:
-                    soles.retirarMonto(1, cantidad);
-                    break;
-                case COD_DOLARES:
-                    dolares.retirarMonto(1, cantidad);
-                    break;
-                case COD_BONO:
-                    for (int i = 0; i < cantidad && !bonos.empty(); ++i)
-                        bonos.pop_back();
-                    break;
-                case COD_JOYA:
-                    for (int i = 0; i < cantidad && !joyas.empty(); ++i)
-                        joyas.pop_back();
-                    break;
-                default:
-                    throw std::invalid_argument("Código de activo desconocido");
-            }
+    void retirar(const std::unordered_map<CodigoActivo,double>& sol) {
+        for (auto& [cod, m] : sol) {
+            auto it = mapa.find(cod);
+            if (it == mapa.end())
+                throw std::invalid_argument("Activo no existe");
+            it->second->retirar(m);
         }
     }
 
-    /// Valor total combinado de todos los activos
     double total() const {
-        double suma = soles.obtenerTotal() + dolares.obtenerTotal();
-        for (const auto& b : bonos)   suma += b.valor;
-        for (const auto& j : joyas)   suma += j.valor;
+        double suma = 0;
+        for (auto& [_, ptr] : mapa)
+            suma += ptr->total();
         return suma;
     }
 };
