@@ -1,52 +1,28 @@
 // Boveda.h
 #pragma once
 
+#include <string>
 #include <vector>
-#include <stdexcept>
-#include "Plaza.h"
-#include "Registro.h"
+#include <unordered_map>
 #include "Activos.h"
-#include "Transportador.h"
-#include "Banco.h"
-
+#include "Registro.h"
 
 class Boveda {
-private: 
-    Banco banc ;
-    const Plaza plaza;
+private:
     std::string codigo;
-    double saldo;
-    Activo activos;
-    std::vector<Registro> s;
-    std::vector<Transportador*> transportadores;
+    Activos activos;
+    std::vector<Registro> registros;
+    void registrarRegistro(TipoOperacion tipo, const SolicitudActivos& sol);
+
 public:
-    explicit Boveda(const Plaza& p)
-      : plaza(p), saldo(0.0)
-    {}
+    using SolicitudActivos = std::unordered_map<CodigoActivo,double>;
 
-    void actualizarSaldoBCR() {
-        saldo = activos.valorTotal();
-    }
+    explicit Boveda(const std::string& codigo_);
 
-    bool verificarInventario(const Registro& reg) {
-        return activos.verificarFondos(reg.monedas.front().getTipo(),static_cast<int>(reg.montoTotal));
-    }
+    SolicitudActivos crearSolicitud() const;
+    void depositar(const SolicitudActivos& sol);
+    void retirar(const SolicitudActivos& sol);
+    void transportar(Boveda& destino, const SolicitudActivos& sol);
 
-    void descontarInventario(const Registro& reg) {
-        if (!verificarInventario(reg))
-            throw std::runtime_error("Saldo insuficiente"); 
-    }
-
-    void incrementarInventario(const Registro& reg) {
-        activos.agregarMoneda(reg.monedas.front());
-    }
-
-    void cargarArchivos(const Registro& /*reg*/) {
-    }
-
-    void registrar(const Registro& reg) {
-        registro.push_back(reg);
-    }
-
-    
+    const std::vector<Registro>& getRegistros() const;
 };
