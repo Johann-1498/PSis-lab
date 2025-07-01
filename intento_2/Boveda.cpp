@@ -14,8 +14,13 @@ void Boveda::depositar(const SolicitudActivos& sol, Transportador* t) {
 }
 
 void Boveda::retirar(const SolicitudActivos& sol, Transportador* t) {
-    activos.retirar(sol);
-    registrar(TipoOperacion::RETIRO, sol, t);
+    try {
+        activos.retirar(sol);
+        registrar(TipoOperacion::RETIRO, sol, t);
+    } catch (const std::runtime_error& e) {
+        // Convertimos excepciones estándar en nuestras excepciones específicas
+        throw BovedaException(e.what());
+    }
 }
 
 void Boveda::registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t) {

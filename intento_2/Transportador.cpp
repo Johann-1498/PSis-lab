@@ -8,7 +8,10 @@ Transportador::Transportador(const std::string& n, const std::string& c)
 
 void Transportador::asignarRuta(const std::vector<ParadaRuta>& ruta) {
     if (!ruta_actual.empty()) {
-        throw OperacionException("El transportador ya tiene una ruta activa.");
+          throw RutaActivaException(); //El transportador ya tiene una ruta activa
+    }
+     if (ruta.empty()) {
+        throw RutaInvalidaException(); // Cambiado
     }
     // Validar si la ruta es factible (aquí iría la lógica de negocio)
     // Por ahora, aceptamos cualquier ruta.

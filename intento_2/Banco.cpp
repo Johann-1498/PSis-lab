@@ -16,7 +16,9 @@ Boveda* Banco::getBoveda(const std::string& codigo_boveda) {
             return boveda_ptr.get();
         }
     }
-    return nullptr;
+    //return nullptr;
+    throw BovedaNoEncontradaException(codigo_boveda); // Cambiado
+
 }
 
 void Banco::iniciarTrasladoInterbancario(Boveda* origen, Boveda* destino, Transportador* transportador, const SolicitudActivos& solicitud) {
