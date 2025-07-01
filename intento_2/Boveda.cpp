@@ -1,4 +1,6 @@
 #include "Boveda.h"
+#include "BovedaExceptions.h"
+
 #include "Transportador.h" // Se necesita la definición completa aquí
 
 Boveda::Boveda(const std::string& codigo_, Plaza* p)

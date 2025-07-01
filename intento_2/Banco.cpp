@@ -1,4 +1,6 @@
 #include "Banco.h"
+#include "BancoExceptions.h"  // Incluir el archivo de excepciones del Banco
+
 #include "Plaza.h"
 #include <iostream>
 #include <numeric>

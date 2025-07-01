@@ -1,4 +1,6 @@
 #include "Transportador.h"
+#include "TransportadorExceptions.h"
+
 #include "Boveda.h"
 #include "Plaza.h"
 #include <iostream>
