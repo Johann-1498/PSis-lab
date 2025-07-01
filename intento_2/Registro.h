@@ -1,10 +1,8 @@
 #pragma once
-
 #include <chrono>
-#include "TipoOperacion.h"      // <-- Se incluye el archivo
-#include "SolicitudActivos.h"   // <-- Se incluye el archivo
-
-// EL ENUM 'TipoOperacion' YA NO ESTÁ AQUÍ. ¡ESTO ES LO CORRECTO!
+#include "TipoOperacion.h"
+#include "SolicitudActivos.h"
+#include "RegistroExceptions.h" // Nuevo include
 
 // Forward declarations
 class Plaza;
@@ -28,8 +26,19 @@ public:
         boveda_afectada(boveda),
         transportador(trans)
     {
+        if (sol.empty()) {
+            throw SolicitudVaciaException();
+        }
+        
         for (const auto& item : sol) {
+            if (item.second < 0) {
+                throw MontoNegativoException(item.first, item.second);
+            }
             monto_total += item.second;
+        }
+        
+        if (monto_total <= 0) {
+            throw RegistroMontoInvalidoException(monto_total);
         }
     }
 };

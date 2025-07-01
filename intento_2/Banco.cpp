@@ -1,6 +1,10 @@
 #include "Banco.h"
 #include "BancoExceptions.h"  // Incluir el archivo de excepciones del Banco
 
+#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
+#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
+
+
 #include "Plaza.h"
 #include <iostream>
 #include <numeric>

@@ -5,6 +5,10 @@
 #include "Transportador.h"
 #include "OperacionException.h"
 
+#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
+#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
+
+
 void imprimirEstadoBoveda(const Boveda& boveda) {
     std::cout << "--- Estado Bóveda: " << boveda.getCodigo() << " ---\n";
     std::cout << "  Soles:   " << boveda.totalPorActivo(CodigoActivo::SOLES) << "\n";

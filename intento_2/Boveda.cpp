@@ -1,6 +1,9 @@
 #include "Boveda.h"
 #include "BovedaExceptions.h"
 
+#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
+#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
+
 #include "Transportador.h" // Se necesita la definición completa aquí
 
 Boveda::Boveda(const std::string& codigo_, Plaza* p)

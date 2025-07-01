@@ -1,6 +1,10 @@
 #include "Transportador.h"
 #include "TransportadorExceptions.h"
 
+#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
+#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
+
+
 #include "Boveda.h"
 #include "Plaza.h"
 #include <iostream>

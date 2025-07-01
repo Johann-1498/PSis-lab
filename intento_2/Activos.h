@@ -6,18 +6,15 @@
 #include <algorithm>
 #include <stdexcept>
 #include <memory>
+#include "CodigoActivo.h"  // Incluir el enum
+
+#include "ActivosExceptions.h" // include exceptions activos
 
 // ... (El código de Activo, Moneda, Bono, Joya, y Activos que proporcionaste va aquí, sin cambios)
 // Tu código para Activos.h era funcional y completo para este escenario.
 // Lo incluyo aquí para que la respuesta sea autocontenida.
 
-/// Códigos de activos
-enum class CodigoActivo : int {
-    SOLES   = 10,
-    DOLARES = 11,
-    BONO    = 20,
-    JOYA    = 30
-};
+/// Códigos de activ
 
 class Activo {
 public:
@@ -42,20 +39,21 @@ public:
                 nombre = "Dolares";
                 break;
             default:
-                throw std::invalid_argument("Código de moneda inválido");
+                throw TipoMonedaInvalidoException(codigo);
         }
     }
 
     void depositar(double monto) override {
-        // La lógica original es compleja y puede fallar si no se pueden dar billetes exactos.
-        // Para este ejemplo, simplificamos a un depósito directo.
-        // Si la distribución en billetes es un requisito estricto, tu lógica original se mantiene.
+        if (monto < 0) {
+            throw std::invalid_argument("Monto negativo no permitido");
+        }
         valorTotal += monto;
     }
 
     void retirar(double monto) override {
-        if (monto > valorTotal)
-            throw std::runtime_error("Saldo insuficiente en " + nombre);
+        if (monto > valorTotal) {
+            throw SaldoActivoInsuficienteException(codigo, monto, valorTotal);
+        }
         valorTotal -= monto;
     }
 
@@ -68,7 +66,7 @@ private:
     std::string nombre;
     double valorTotal;
     std::vector<int> validos;
-    std::unordered_map<int,int> billetes; // Mantenemos para posible lógica futura
+    std::unordered_map<int,int> billetes;
 };
 
 class Bono : public Activo {
@@ -132,11 +130,13 @@ public:
             CodigoActivo cod = pair.first;
             double m = pair.second;
             auto it = mapa.find(cod);
-            if (it == mapa.end())
-                throw std::invalid_argument("Activo no existe al depositar");
+            if (it == mapa.end()) {
+                throw ActivoNoExisteException(cod);
+            }
             it->second->depositar(m);
         }
     }
+
 
     void retirar(const std::unordered_map<CodigoActivo,double>& sol) {
         // Transacción de prueba: verificar si todo se puede retirar antes de hacerlo
@@ -145,9 +145,9 @@ public:
             double m = pair.second;
             auto it = mapa.find(cod);
             if (it == mapa.end())
-                throw std::invalid_argument("Activo no existe al retirar");
+                throw ActivoNoExisteException(cod);
             if (it->second->total() < m) {
-                throw std::runtime_error("Fondos insuficientes para el activo al verificar retiro");
+                throw SaldoActivoInsuficienteException(cod, m, it->second->total());
             }
         }
         // Si todas las verificaciones pasan, proceder con el retiro
