@@ -25,7 +25,7 @@ int main() {
         return 1;  // Test failed
     } 
     catch (const BovedaNoEncontradaException& e) {
-        std::cout << "EXITO: Excepción detectada correctamente :\n" 
+        std::cout << "EXITO: Excepcion detectada correctamente :\n" 
                   << e.what() << std::endl;
         return 0;  // Test passed
     }

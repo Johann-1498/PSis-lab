@@ -27,5 +27,5 @@ public:
 class TipoMonedaInvalidoException : public ActivosException {
 public:
     explicit TipoMonedaInvalidoException(CodigoActivo codigo)
-        : ActivosException("Código inválido para moneda: " + std::to_string(static_cast<int>(codigo))) {}
+        : ActivosException("Codigo invalido para moneda: " + std::to_string(static_cast<int>(codigo))) {}
 };

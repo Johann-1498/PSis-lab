@@ -17,23 +17,23 @@ int main() {
         withdrawalRequest.activos[CodigoActivo::DOLARES] = 1000.0;
 
         // 3. Show initial state
-        std::cout << "=== Saldo Insuficiente Test ===" << std::endl;
-        std::cout << "Initial balance in vault: $" 
+        std::cout << "=== Saldo Insuficiente TEST ===" << std::endl;
+        std::cout << "Valor inicial: $" 
                   << boveda.totalPorActivo(CodigoActivo::DOLARES) << std::endl;
 
         // 4. Attempt withdrawal (should fail)
-        std::cout << "Attempting to withdraw $1000 from empty vault..." << std::endl;
+        std::cout << "Intentando retirar $1000 sin fondos..." << std::endl;
         boveda.retirar(withdrawalRequest, &transporter);
         
-        std::cerr << "ERROR: Expected exception was not thrown!" << std::endl;
+        std::cerr << "ERROR: Incidencia capturada!" << std::endl;
         return 1;
     } 
     catch (const SaldoInsuficienteException& e) {
-        std::cout << "SUCCESS: Exception caught correctly:\n" 
+        std::cout << "SUCCESS: Excepcion capturada correcamente:\n" 
                   << e.what() << std::endl;
     }
     catch (const std::exception& e) {
-        std::cerr << "UNEXPECTED ERROR: " << e.what() << std::endl;
+        std::cerr << "ERROR INESPERADO: " << e.what() << std::endl;
         return 1;
     }
     

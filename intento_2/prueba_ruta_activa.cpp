@@ -31,7 +31,7 @@ void testRutaActiva() {
         
         // 4. Intentar asignar segunda ruta (debería fallar)
         transporter.asignarRuta(ruta2);
-        std::cerr << "ERROR: No se lanzó la excepción esperada\n";
+        std::cerr << "ERROR: No se lanzo la excepción esperada\n";
         
     } catch (const RutaActivaException& e) {
         std::cout << "Prueba exitosa: " << e.what() << "\n";
@@ -41,7 +41,7 @@ void testRutaActiva() {
 }
 
 int main() {
-    std::cout << "=== Probando excepción de ruta activa ===\n";
+    std::cout << "=== Probando excepcion de ruta activa ===\n";
     testRutaActiva();
     return 0;
 }
