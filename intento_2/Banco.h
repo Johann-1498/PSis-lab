@@ -7,6 +7,7 @@
 #include "Transportador.h"
 #include "BancoExceptions.h"
 #include "OperacionException.h"
+#include "Plaza.h"
 
 class Banco {
 private:

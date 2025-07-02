@@ -1,13 +1,12 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include "Plaza.h"
 #include "Banco.h"
 #include "Transportador.h"
 #include "OperacionException.h"
-
-#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
-#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
-
+#include "CodigoActivo.h"
+#include "ActivosExceptions.h"
 
 void imprimirEstadoBoveda(const Boveda& boveda) {
     std::cout << "--- Estado Bóveda: " << boveda.getCodigo() << " ---\n";
@@ -22,8 +21,8 @@ int main() {
     try {
         // 1. Configuración del entorno
         std::cout << "--- CONFIGURANDO ENTORNO ---\n";
-        Plaza plaza_lima{"Lima", "Av. Principal 123", "LIM01"};
-        Plaza plaza_aqp{"Arequipa", "Calle Mercaderes 456", "AQP01"};
+        Plaza plaza_lima("Lima");
+        Plaza plaza_aqp("Arequipa");
 
         Banco banco_bcp("BCP");
         Banco banco_bbva("BBVA");
@@ -38,11 +37,12 @@ int main() {
         Boveda* boveda_origen = banco_bcp.getBoveda("BCP_LIM_CENTRAL");
         if (!boveda_origen) return 1;
 
-        SolicitudActivos deposito_inicial = {
-            {CodigoActivo::SOLES, 50000.0},
-            {CodigoActivo::DOLARES, 20000.0},
-            {CodigoActivo::BONO, 100.0}
-        };
+        // Crear solicitud de depósito inicial
+        SolicitudActivos deposito_inicial;
+        deposito_inicial.activos[CodigoActivo::SOLES] = 50000.0;
+        deposito_inicial.activos[CodigoActivo::DOLARES] = 20000.0;
+        deposito_inicial.activos[CodigoActivo::BONO] = 100.0;
+        
         boveda_origen->depositar(deposito_inicial);
         imprimirEstadoBoveda(*boveda_origen);
         
@@ -50,14 +50,11 @@ int main() {
         if (!boveda_destino) return 1;
         imprimirEstadoBoveda(*boveda_destino);
 
-
         // 3. El banco BCP inicia una solicitud de traslado
-        // Quiere mover activos de su bóveda en Lima a una bóveda de BBVA en Arequipa
         std::cout << "\n--- INICIANDO SOLICITUD DE TRASLADO ---\n";
-        SolicitudActivos solicitud_traslado = {
-            {CodigoActivo::SOLES, 15000.0},
-            {CodigoActivo::BONO, 25.0}
-        };
+        SolicitudActivos solicitud_traslado;
+        solicitud_traslado.activos[CodigoActivo::SOLES] = 15000.0;
+        solicitud_traslado.activos[CodigoActivo::BONO] = 25.0;
         
         // El banco BCP orquesta la operación
         banco_bcp.iniciarTrasladoInterbancario(

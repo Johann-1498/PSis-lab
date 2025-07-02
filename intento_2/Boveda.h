@@ -4,6 +4,7 @@
 #include "Activos.h"
 #include "Registro.h"
 #include "OperacionException.h"
+#include "Plaza.h"
 
 class Boveda {
 private:

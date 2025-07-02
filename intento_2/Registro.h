@@ -2,43 +2,46 @@
 #include <chrono>
 #include "TipoOperacion.h"
 #include "SolicitudActivos.h"
-#include "RegistroExceptions.h" // Nuevo include
+#include "RegistroExceptions.h"
 
 // Forward declarations
-class Plaza;
-class Transportador;
-class Banco;
 class Boveda;
+class Transportador;
 
 class Registro {
 public:
-    std::chrono::system_clock::time_point fecha;
-    TipoOperacion tipo;
-    SolicitudActivos solicitud;
-    Boveda* boveda_afectada = nullptr;
-    Transportador* transportador = nullptr;
-    double monto_total = 0.0;
+    const std::chrono::system_clock::time_point fecha;
+    const TipoOperacion tipo;
+    const SolicitudActivos solicitud;
+    Boveda* const boveda_afectada;
+    Transportador* const transportador;
+    const double monto_total;
 
     Registro(TipoOperacion tipo_, const SolicitudActivos& sol, Boveda* boveda, Transportador* trans = nullptr)
       : fecha(std::chrono::system_clock::now()),
         tipo(tipo_),
         solicitud(sol),
         boveda_afectada(boveda),
-        transportador(trans)
+        transportador(trans),
+        monto_total(calculateTotal(sol))
     {
-        if (sol.empty()) {
-            throw SolicitudVaciaException();
+        validateInput(sol);
+    }
+
+private:
+    void validateInput(const SolicitudActivos& sol) const {
+        sol.validar(); // Use SolicitudActivos's validation
+    }
+
+    double calculateTotal(const SolicitudActivos& sol) const {
+        double total = 0.0;
+        for (const auto& item : sol.activos) {
+            total += item.second;
         }
         
-        for (const auto& item : sol) {
-            if (item.second < 0) {
-                throw MontoNegativoException(item.first, item.second);
-            }
-            monto_total += item.second;
+        if (total <= 0) {
+            throw RegistroMontoInvalidoException(total);
         }
-        
-        if (monto_total <= 0) {
-            throw RegistroMontoInvalidoException(monto_total);
-        }
+        return total;
     }
 };
