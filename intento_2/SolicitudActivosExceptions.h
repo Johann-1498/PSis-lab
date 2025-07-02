@@ -1,29 +1,23 @@
 #pragma once
-#include "OperacionException.h"
-#include "Activos.h" // Para CodigoActivo
+#include <stdexcept>
+#include "CodigoActivo.h"
 
-class SolicitudActivosException : public OperacionException {
+class SolicitudActivosException : public std::runtime_error {
 public:
     explicit SolicitudActivosException(const std::string& message)
-        : OperacionException("[SolicitudActivos] " + message) {}
+        : std::runtime_error("[SolicitudActivos] " + message) {}
 };
 
 class SolicitudVaciaException : public SolicitudActivosException {
 public:
-    explicit SolicitudVaciaException()
-        : SolicitudActivosException("La solicitud de activos está vacía") {}
-};
-
-class ActivoNoSoportadoException : public SolicitudActivosException {
-public:
-    explicit ActivoNoSoportadoException(CodigoActivo codigo)
-        : SolicitudActivosException("Activo no soportado en solicitud: " + std::to_string(static_cast<int>(codigo))) {}
+    SolicitudVaciaException()
+        : SolicitudActivosException("La solicitud está vacía") {}
 };
 
 class MontoNegativoException : public SolicitudActivosException {
 public:
-    explicit MontoNegativoException(CodigoActivo codigo, double monto)
-        : SolicitudActivosException("Monto negativo para activo " + 
-                                  std::to_string(static_cast<int>(codigo)) + 
-                                  ": " + std::to_string(monto)) {}
+    MontoNegativoException(CodigoActivo codigo, double monto)
+        : SolicitudActivosException("Monto negativo no permitido para " +
+                                    std::to_string(static_cast<int>(codigo)) +
+                                    ": " + std::to_string(monto)) {}
 };

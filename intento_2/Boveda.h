@@ -10,7 +10,7 @@ private:
     std::string codigo;
     Activos activos;
     std::vector<Registro> registros;
-    Plaza* plaza; // Una bóveda pertenece a una plaza
+    Plaza* plaza;
 
     void registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t = nullptr);
 

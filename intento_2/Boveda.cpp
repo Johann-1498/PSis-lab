@@ -1,13 +1,10 @@
 #include "Boveda.h"
 #include "BovedaExceptions.h"
+#include "CodigoActivo.h"
+#include "ActivosExceptions.h"
+#include "Transportador.h"
 
-#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
-#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
-
-#include "Transportador.h" // Se necesita la definición completa aquí
-
-Boveda::Boveda(const std::string& codigo_, Plaza* p)
-  : codigo(codigo_), plaza(p) {
+Boveda::Boveda(const std::string& codigo_, Plaza* p) : codigo(codigo_), plaza(p) {
     if (!p) {
         throw std::invalid_argument("La bóveda debe pertenecer a una plaza.");
     }
@@ -23,7 +20,6 @@ void Boveda::retirar(const SolicitudActivos& sol, Transportador* t) {
         activos.retirar(sol);
         registrar(TipoOperacion::RETIRO, sol, t);
     } catch (const std::runtime_error& e) {
-        // Convertimos excepciones estándar en nuestras excepciones específicas
         throw BovedaException(e.what());
     }
 }

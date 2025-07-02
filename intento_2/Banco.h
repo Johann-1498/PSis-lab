@@ -1,9 +1,11 @@
+// Banco.h
 #pragma once
 #include <string>
 #include <vector>
 #include <memory>
 #include "Boveda.h"
 #include "Transportador.h"
+#include "BancoExceptions.h"
 #include "OperacionException.h"
 
 class Banco {

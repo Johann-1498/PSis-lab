@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <memory>
 #include "CodigoActivo.h"  // Incluir el enum
-
+#include "SolicitudActivos.h"
 #include "ActivosExceptions.h" // include exceptions activos
 
 // ... (El código de Activo, Moneda, Bono, Joya, y Activos que proporcionaste va aquí, sin cambios)
@@ -125,17 +125,20 @@ public:
         mapa[CodigoActivo::JOYA]    = std::make_unique<Joya>(1.0);
     }
 
-    void depositar(const std::unordered_map<CodigoActivo,double>& sol) {
-        for (const auto& pair : sol) {
-            CodigoActivo cod = pair.first;
-            double m = pair.second;
-            auto it = mapa.find(cod);
-            if (it == mapa.end()) {
-                throw ActivoNoExisteException(cod);
-            }
-            it->second->depositar(m);
+    void depositar(const SolicitudActivos& sol) {
+    sol.validar(); // Validar antes de procesar
+    
+    for (const auto& pair : sol.activos) {
+        CodigoActivo cod = pair.first;
+        double m = pair.second;
+        
+        auto it = mapa.find(cod);
+        if (it == mapa.end()) {
+            throw ActivoNoExisteException(cod);
         }
+        it->second->depositar(m);
     }
+}
 
 
     void retirar(const std::unordered_map<CodigoActivo,double>& sol) {

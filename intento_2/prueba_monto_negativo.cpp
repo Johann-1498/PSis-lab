@@ -1,16 +1,25 @@
 #include "Activos.h"
-#include "SolicitudActivosExceptions.h"
+#include "SolicitudActivos.h"
+#include <iostream>
 
 int main() {
     Activos activos;
-    SolicitudActivos solicitud = {{CodigoActivo::DOLARES, -100}}; // Monto negativo
+    SolicitudActivos solicitud;
+    solicitud.activos = {{CodigoActivo::DOLARES, -100.0}};
     
     try {
-        // Intentar depositar monto negativo
+        std::cout << "Intentando depositar monto negativo..." << std::endl;
         activos.depositar(solicitud);
-    } catch (const MontoNegativoException& e) {
-        std::cerr << "Excepción capturada: " << e.what() << std::endl;
-        // Salida esperada mostrará el activo y monto negativo
+        
+        std::cerr << "ERROR: No se lanzó la excepción" << std::endl;
+        return 1;
+    } 
+    catch (const MontoNegativoException& e) {
+        std::cout << "SUCCESS: Excepción capturada:\n" << e.what() << std::endl;
+        return 0;
     }
-    return 0;
+    catch (...) {
+        std::cerr << "ERROR: Excepción inesperada" << std::endl;
+        return 1;
+    }
 }

@@ -2,17 +2,35 @@
 #include <iostream>
 #include "Banco.h"
 #include "BancoExceptions.h"
-#include "Plaza.h" // Necesario para crear Banco
+#include "Plaza.h"
 
 int main() {
-    Plaza plazaCentral("Plaza Central");
-    Banco banco("Mi Banco", &plazaCentral); // Requiere Plaza
-    
     try {
-        std::cout << "Intentando acceder a bóveda inexistente..." << std::endl;
+        // Initialize objects
+        Plaza plazaCentral("Plaza Central");
+        plazaCentral.codigo = "PLZ001";
+        plazaCentral.direccion = "Av. Principal 123";
+
+        Banco banco("Mi Banco");
+        
+        // Setup test environment
+        banco.agregarBoveda("BOVEDA_1", &plazaCentral);
+        banco.agregarBoveda("BOVEDA_2", &plazaCentral);
+
+        // Test case
+        std::cout << "Intentando acceder a una boveda inexistente..." << std::endl;
         auto boveda = banco.getBoveda("BOVEDA_INEXISTENTE");
-    } catch (const BovedaNoEncontradaException& e) {
-        std::cerr << " Excepción capturada correctamente:\n" << e.what() << std::endl;
+        
+        std::cerr << "ERROR: No se pudo acceder!" << std::endl;
+        return 1;  // Test failed
+    } 
+    catch (const BovedaNoEncontradaException& e) {
+        std::cout << "EXITO: Excepción detectada correctamente :\n" 
+                  << e.what() << std::endl;
+        return 0;  // Test passed
     }
-    return 0;
+    catch (...) {
+        std::cerr << "ERROR: Excepcion erronea!" << std::endl;
+        return 1;  // Test failed
+    }
 }

@@ -13,18 +13,15 @@ Banco::Banco(const std::string& nombre) : nombre(nombre), saldo_BCR(0.0) {}
 
 void Banco::agregarBoveda(const std::string& codigo_boveda, Plaza* p) {
     bovedas.push_back(std::make_unique<Boveda>(codigo_boveda, p));
-    std::cout << "[Banco " << nombre << "] Bóveda " << codigo_boveda << " agregada en " << p->ciudad << ".\n";
 }
 
 Boveda* Banco::getBoveda(const std::string& codigo_boveda) {
-    for (const auto& boveda_ptr : bovedas) {
-        if (boveda_ptr->getCodigo() == codigo_boveda) {
-            return boveda_ptr.get();
+    for (const auto& b : bovedas) {
+        if (b->getCodigo() == codigo_boveda) {
+            return b.get();
         }
     }
-    //return nullptr;
-    throw BovedaNoEncontradaException(codigo_boveda); // Cambiado
-
+    throw BovedaNoEncontradaException(codigo_boveda);
 }
 
 void Banco::iniciarTrasladoInterbancario(Boveda* origen, Boveda* destino, Transportador* transportador, const SolicitudActivos& solicitud) {
