@@ -1,5 +1,6 @@
 #include "Activos.h"
 #include "ActivosExceptions.h"
+using namespace std;
 
 int main() {
     try {

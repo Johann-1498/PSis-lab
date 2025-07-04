@@ -6,10 +6,10 @@
 
 int main() {
     try {
-        std::cout << "Intentando crear moneda con código de bono..." << std::endl;
+        std::cout << "Intentando crear moneda con codigo de bono..." << std::endl;
         Moneda monedaInvalida(CodigoActivo::BONO); // BONO no es tipo moneda
     } catch (const TipoMonedaInvalidoException& e) {
-        std::cerr << "Excepción capturada correctamente:\n" << e.what() << std::endl;
+        std::cerr << "Excepcion capturada correctamente:\n" << e.what() << std::endl;
     }
     return 0;
 }

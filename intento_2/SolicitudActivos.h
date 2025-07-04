@@ -6,8 +6,12 @@
 struct SolicitudActivos {
     std::unordered_map<CodigoActivo, double> activos;
 
+    bool empty() const {
+        return activos.empty();
+    }
+
     void validar() const {
-        if (activos.empty()) {
+        if (empty()) {
             throw SolicitudVaciaException();
         }
 

@@ -1,10 +1,8 @@
+// Transportador.cpp
 #include "Transportador.h"
 #include "TransportadorExceptions.h"
-
-#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
-#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
-
-
+#include "CodigoActivo.h"
+#include "ActivosExceptions.h"
 #include "Boveda.h"
 #include "Plaza.h"
 #include <iostream>
@@ -14,13 +12,11 @@ Transportador::Transportador(const std::string& n, const std::string& c)
 
 void Transportador::asignarRuta(const std::vector<ParadaRuta>& ruta) {
     if (!ruta_actual.empty()) {
-          throw RutaActivaException(); //El transportador ya tiene una ruta activa
+        throw RutaActivaException();
     }
-     if (ruta.empty()) {
-        throw RutaInvalidaException(); // Cambiado
+    if (ruta.empty()) {
+        throw RutaInvalidaException();
     }
-    // Validar si la ruta es factible (aquí iría la lógica de negocio)
-    // Por ahora, aceptamos cualquier ruta.
     std::cout << "[Transportador " << nombre << "] Ruta asignada con " << ruta.size() << " paradas.\n";
     ruta_actual = ruta;
 }
@@ -40,18 +36,14 @@ void Transportador::ejecutarRuta() {
             switch (parada.tipo_op) {
                 case TipoOperacion::RETIRO:
                     std::cout << "   Acción: Recoger activos." << std::endl;
-                    // Bóveda entrega activos al transportador
                     parada.boveda->retirar(parada.solicitud, this);
-                    // Transportador recibe los activos en su carga
                     carga.depositar(parada.solicitud);
                     std::cout << "   Éxito: Activos recogidos. Carga actual: " << carga.total() << std::endl;
                     break;
 
                 case TipoOperacion::DEPOSITO:
                     std::cout << "   Acción: Entregar activos." << std::endl;
-                    // Transportador retira de su carga
-                    carga.retirar(parada.solicitud);
-                    // Bóveda recibe los activos
+                    carga.retirar(parada.solicitud.activos);
                     parada.boveda->depositar(parada.solicitud, this);
                     std::cout << "   Éxito: Activos entregados. Carga actual: " << carga.total() << std::endl;
                     break;
@@ -59,15 +51,14 @@ void Transportador::ejecutarRuta() {
                 default:
                     throw OperacionException("Tipo de operación inválida en la ruta del transportador.");
             }
-        } catch (const std::runtime_error& e) {
-            // Limpiar ruta y lanzar una excepción más específica
+        } catch (const std::exception& e) {  // Changed to catch std::exception
             ruta_actual.clear();
             throw OperacionException("Fallo en la ruta en la bóveda " + parada.boveda->getCodigo() + ": " + e.what());
         }
     }
 
     std::cout << "\n--- [Transportador " << nombre << "] RUTA COMPLETADA ---\n";
-    if (carga.total() > 0.01) { // Usar una tolerancia para el double
+    if (carga.total() > 0.01) {
          std::cerr << "ADVERTENCIA: El transportador finalizó la ruta con carga residual: " << carga.total() << std::endl;
     }
     ruta_actual.clear();

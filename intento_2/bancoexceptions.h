@@ -11,7 +11,7 @@ public:
 class BovedaNoEncontradaException : public BancoException {
 public:
     explicit BovedaNoEncontradaException(const std::string& codigo)
-        : BancoException("Bóveda no encontrada: " + codigo) {}
+        : BancoException("Boveda no encontrada: " + codigo) {}
 };
 
 class SaldoInsuficienteException : public BancoException {

@@ -11,15 +11,15 @@ int main() {
         std::cout << "Intentando depositar monto negativo..." << std::endl;
         activos.depositar(solicitud);
         
-        std::cerr << "ERROR: No se lanzó la excepción" << std::endl;
+        std::cerr << "ERROR: No se lanzo la excepcion" << std::endl;
         return 1;
     } 
     catch (const MontoNegativoException& e) {
-        std::cout << "SUCCESS: Excepción capturada:\n" << e.what() << std::endl;
+        std::cout << "SUCCESS: Excepcion capturada:\n" << e.what() << std::endl;
         return 0;
     }
     catch (...) {
-        std::cerr << "ERROR: Excepción inesperada" << std::endl;
+        std::cerr << "ERROR: Excepcion inesperada" << std::endl;
         return 1;
     }
 }
