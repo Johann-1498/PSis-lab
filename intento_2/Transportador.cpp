@@ -16,6 +16,9 @@ void Transportador::ejecutarRuta() {
         std::cout << "No hay ruta programada.\n";
         return;
     }
+    Boveda* inicio, fin;
+    SolicitudActivos solAnterior;
+    bool primeraRuta= true;
 
     for (const auto& parada :ruta) {
         std::cout << "\n-> Camino a la boveda : " << parada.boveda->getCodigo()
@@ -28,7 +31,16 @@ void Transportador::ejecutarRuta() {
                     parada.boveda->retirar(parada.solicitud, this);
                     carga.depositar(parada.solicitud);
                     std::cout << "   Exito: Activos recogidos. Carga actual: " << carga.total() << std::endl;
-                    
+                    if(primeraRuta){
+                        inicio=parada.boveda;
+                        primeraRuta=false;
+                        solAnterior = paradaa.solicitud;
+                    }else{
+                        fin = parada.boveda;
+                        primeraRuta = false;
+                        registrarRuta(inicio, fin, solAnterior);
+                    }
+                
                     break;
 
                 case TipoOperacion::DEPOSITO:
@@ -56,23 +68,20 @@ void Transportador::ejecutarRuta() {
 
 
 void Transportador::registrarRuta(Boveda* inicio, Boveda* final, const SolicitudActivos& sol){
-    RegistroTransportador rt;
-
     // 1) registro de origen
     inicio->retirar(sol, this);
     const Registro& r_or = inicio->getRegistros().back();
-    rt.setOrigen(r_or);
 
     // 2) registro sinterno
-    Registro r_tr(TipoOperacion::TRANSFERENCIA, sol,inicio,this);
-    rt.setTransporte(r_tr);
+    Registro r_tr(TipoOperacion::TRANSFERENCIA, sol,inicio,this);//CORREGIR
 
     // 3) registro de destino
     final->depositar(sol, this);
     const Registro& r_de = final->getRegistros().back();
-    rt.setDestino(r_de);
-
     // 4) validar y almacenar
-    rt.validar();
-    registrosTransportador.push_back(rt);
+
+    RegistroTransportador reg(r_tr, &r_or, &r_de);
+
+    .validar();
+    registrosTransportador.push_back();
 }

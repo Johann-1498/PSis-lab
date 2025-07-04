@@ -5,7 +5,10 @@ struct RegistroTransportador {
 
     RegistroTransportador(const Registro& reg, const Registro* orig, const Registro* dest): registro(reg), origen(orig), destino(dest) {}
 
+    RegistroTransportador(const Registro& reg, const Registro* orig, const Registro* dest): registro(reg), origen(orig), destino(dest) {}
+
     bool validar() const {
         return registro.equals(*origen) && registro.equals(*destino);//AGREGAR EXECPCION
     }
+
 };
