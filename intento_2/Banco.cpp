@@ -1,75 +1,43 @@
 #include "Banco.h"
-#include "BancoExceptions.h"  // Incluir el archivo de excepciones del Banco
-
-#include "CodigoActivo.h"  // Si necesitan usar el enum directamente
-#include "ActivosExceptions.h"  // Si necesitan lanzar excepciones
-
-
-#include "Plaza.h"
+#include "Boveda.h"
+#include "Transportador.h"
+#include "CSVParser.h"
+#include "Registro.h"
+#include "excepciones/BancoExceptions.h"
 #include <iostream>
-#include <numeric>
 
-Banco::Banco(const std::string& nombre) : nombre(nombre), saldo_BCR(0.0) {}
+BovedaNoEncontradaException::BovedaNoEncontradaException(const std::string& codigo_boveda)
+    : BancoException("Bóveda no encontrada: " + codigo_boveda) {}
 
-void Banco::agregarBoveda(const std::string& codigo_boveda, Plaza* p) {
-    bovedas.push_back(std::make_unique<Boveda>(codigo_boveda, p));
-}
+Banco::Banco(const std::string& nombre) : nombre(nombre) {}
+Banco::~Banco() = default;
 
-Boveda* Banco::getBoveda(const std::string& codigo_boveda) {
+void Banco::agregarBoveda(const std::string& codigo, Plaza* p) { bovedas.emplace_back(std::make_unique<Boveda>(codigo, p)); }
+const std::vector<Registro>& Banco::getLibroMayor() const { return libro_mayor; }
+
+Boveda* Banco::getBoveda(const std::string& codigo) {
     for (const auto& b : bovedas) {
-        if (b->getCodigo() == codigo_boveda) {
-            return b.get();
-        }
+        if (b->getCodigo() == codigo) return b.get();
     }
-    throw BovedaNoEncontradaException(codigo_boveda);
+    throw BovedaNoEncontradaException(codigo);
 }
 
-void Banco::iniciarTrasladoInterbancario(Transportador* transportador, const SolicitudActivos& solicitud) {
-    std::cout << "\n======================================================\n";
-    std::cout << "[Banco " << nombre << "] Iniciando traslado desde " << origen->getCodigo()
-              << " hacia " << destino->getCodigo() << " via " << transportador->getNombre() << ".\n";
-    std::cout << "======================================================\n";
-
-    if (!origen || !destino || !transportador) {
-        throw std::invalid_argument("Argumentos nulos para el traslado.");
-    }
+void Banco::ejecutarOperacionDesdeCSV(const std::string& archivo, Transportador& transportador) {
+    std::cout << "\n>>> [Banco " << nombre << "] Procesando solicitud desde " << archivo << " <<<\n";
+    CSVParser parser;
+    std::vector<ParadaRuta> ruta = parser.parse(archivo);
     
-    // Crear la ruta para el transportador
-    std::vector<ParadaRuta> ruta;
-    // 1. Recoger de la bóveda de origen
-    ruta.push_back({origen, TipoOperacion::RETIRO, solicitud});
-    // 2. Entregar en la bóveda de destino
-    ruta.push_back({destino, TipoOperacion::DEPOSITO, solicitud});
-
-    // "Contratar" al transportador y asignarle la ruta
-    transportador->asignarRuta(ruta);
-
-    // En un sistema real, esto sería asíncrono. Aquí lo ejecutamos de inmediato.
-    transportador->ejecutarRuta();
-
-    // Registrar las operaciones a nivel del BCR
-    // El retiro disminuye el saldo
-    Registro reg_retiro(TipoOperacion::RETIRO, solicitud, origen, transportador);
-    registrarOperacionBCR(reg_retiro);
-
-    // El depósito aumenta el saldo
-    Registro reg_deposito(TipoOperacion::DEPOSITO, solicitud, destino, transportador);
-    registrarOperacionBCR(reg_deposito);
+    auto registros_generados = transportador.ejecutarRuta(ruta, this);
+    
+    libro_mayor.insert(libro_mayor.end(), registros_generados.begin(), registros_generados.end());
+    std::cout << ">>> Operación completada y registrada en el libro mayor del banco. <<<\n";
 }
 
-void Banco::registrarOperacionBCR(const Registro& reg) {
-    libro_mayor.push_back(reg);
-    if (reg.tipo == TipoOperacion::DEPOSITO || reg.tipo == TipoOperacion::INICIAL) {
-        saldo_BCR += reg.monto_total;
-    } else if (reg.tipo == TipoOperacion::RETIRO) {
-        saldo_BCR -= reg.monto_total;
+void Banco::imprimirEstadoGeneral() const {
+    std::cout << "\n--- ESTADO GENERAL DEL BANCO: " << nombre << " ---\n";
+    for (const auto& b : bovedas) {
+        std::cout << "\n  Bóveda: " << b->getCodigo() << "\n";
+        b->imprimirEstado();
     }
-    std::cout << "[BCR] Registro procesado. Saldo de control actualizado: " << saldo_BCR << "\n";
-}
-
-double Banco::totalEnBovedas() const {
-    return std::accumulate(bovedas.begin(), bovedas.end(), 0.0,
-        [](double sum, const auto& boveda_ptr) {
-            return sum + boveda_ptr->total();
-        });
+    std::cout << "--------------------------------------\n";
 }

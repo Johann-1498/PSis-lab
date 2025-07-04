@@ -1,37 +1,19 @@
 #pragma once
-
 #include <string>
 #include <vector>
 #include "Activos.h"
-#include "OperacionException.h"
-#include "TipoOperacion.h"
-#include "SolicitudActivos.h"   // <-- ESTA LÍNEA ES LA SOLUCIÓN
-#include "Plaza.h"
-#include "Registro.h"
-#include "Boveda.h"
-#include "TransportadorExceptions.h"
-#include "RegistroTransportador.h"
 
-class Plaza;
+class Banco;
+class Registro;
+struct ParadaRuta;
+
 class Transportador {
 private:
     std::string nombre;
     Activos carga;
-    Plaza ruta;
-    std::vector<RegistroTransportador> registrosTransportador;
-
+    void limpiarCarga();
 public:
-    Transportador(const std::string& n, const std::string& c);
-    
-    const std::string& getNombre() const { return nombre; }
-    void ejecutarRuta();
-    double totalEnCarga() const { return carga.total(); }
-
-    void registrarRuta(Boveda* inicio, Boveda* final, Activos activos){
-
-    }
-
-
+    Transportador(const std::string& nombre);
+    std::vector<Registro> ejecutarRuta(const std::vector<ParadaRuta>& ruta, Banco* banco_contexto);
+    void imprimirEstado() const;
 };
-
-

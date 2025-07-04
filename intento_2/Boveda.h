@@ -1,29 +1,18 @@
 #pragma once
 #include <string>
-#include <vector>
 #include "Activos.h"
-#include "Registro.h"
-#include "OperacionException.h"
-#include "Plaza.h"
-using namespace std;
+
+class Plaza;
 
 class Boveda {
 private:
-    string codigo;
+    std::string codigo;
     Activos activos;
-    vector<Registro> registros;
-
-    void registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t);
-
+    Plaza* plaza;
 public:
-    explicit Boveda(const string& codigo, Plaza* p);
-    const string& getCodigo() const { return codigo; }
-    
-    void depositar(const SolicitudActivos& sol, Transportador* t);
-    void retirar(const SolicitudActivos& sol, Transportador* t);
-    
-    double total() const { return activos.total(); }
-    double totalPorActivo(CodigoActivo cod) const { return activos.totalPorActivo(cod); }
-
-    const vector<Registro>& getRegistros() const;
+    Boveda(const std::string& codigo, Plaza* p);
+    const std::string& getCodigo() const;
+    void depositar(CodigoActivo cod, double monto);
+    void retirar(CodigoActivo cod, double monto);
+    void imprimirEstado() const;
 };

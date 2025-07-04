@@ -1,87 +1,56 @@
-// Transportador.cpp
 #include "Transportador.h"
-#include "CodigoActivo.h"
-#include "ActivosExceptions.h"
-#include "TransportadorExceptions.h"
-#include "RegistroTransportador.h"
+#include "Banco.h"
 #include "Boveda.h"
-#include "Plaza.h"
+#include "DataTypes.h"
+#include "Registro.h"
+#include "excepciones/TransportadorExceptions.h"
+#include "excepciones/OperacionException.h"
 #include <iostream>
 
-Transportador::Transportador(const std::string& n, const std::string& c) : nombre(n), codigo(c) {}
+RutaActivaException::RutaActivaException() : TransportadorException("El transportador ya tiene carga y no puede iniciar una nueva ruta.") {}
+FalloEnRutaException::FalloEnRutaException(const std::string& boveda_fallo, const std::string& motivo)
+    : TransportadorException("Fallo en la ruta en la bóveda '" + boveda_fallo + "'. Motivo: " + motivo) {}
 
-void Transportador::ejecutarRuta() {
-    std::cout << "\n-  Transportador " << nombre << "Inicio de ruta" << std::endl;
-    if (ruta.empty()) {
-        std::cout << "No hay ruta programada.\n";
-        return;
-    }
-    Boveda* inicio, fin;
-    SolicitudActivos solAnterior;
-    bool primeraRuta= true;
+Transportador::Transportador(const std::string& nombre) : nombre(nombre) {}
+void Transportador::limpiarCarga() { carga = Activos(); }
 
-    for (const auto& parada :ruta) {
-        std::cout << "\n-> Camino a la boveda : " << parada.boveda->getCodigo()
-                  << " en " << parada.boveda->getPlaza()->ciudad << std::endl;
+std::vector<Registro> Transportador::ejecutarRuta(const std::vector<ParadaRuta>& ruta, Banco* banco_contexto) {
+    if (carga.totalGeneral() > 0.01) throw RutaActivaException();
+    
+    std::cout << "\n--- [Transportador " << nombre << "] INICIANDO RUTA ---\n";
+    std::vector<Registro> registros_ruta;
 
+    for (const auto& parada : ruta) {
+        std::cout << "  -> Parada en Bóveda: " << parada.codigo_boveda << std::endl;
         try {
-            switch (parada.solicitud.tipo_op) {
-                case TipoOperacion::RETIRO:
-                    std::cout << "   Operacion: Recoger activos" << std::endl;
-                    parada.boveda->retirar(parada.solicitud, this);
-                    carga.depositar(parada.solicitud);
-                    std::cout << "   Exito: Activos recogidos. Carga actual: " << carga.total() << std::endl;
-                    if(primeraRuta){
-                        inicio=parada.boveda;
-                        primeraRuta=false;
-                        solAnterior = paradaa.solicitud;
-                    }else{
-                        fin = parada.boveda;
-                        primeraRuta = false;
-                        registrarRuta(inicio, fin, solAnterior);
-                    }
-                
-                    break;
-
-                case TipoOperacion::DEPOSITO:
-                    std::cout << "   Operacion: Entregar activos." << std::endl;
-                    carga.retirar(parada.solicitud.activos);
-                    parada.boveda->depositar(parada.solicitud, this);
-                    std::cout << "   Exito: Activos entregados. Carga actual: " << carga.total() << std::endl;
-                    break;
-                
-                default:
-                    throw OperacionException("Tipo de operación inválida en la ruta del transportador.");
+            Boveda* boveda_actual = banco_contexto->getBoveda(parada.codigo_boveda);
+            
+            if (parada.tipo == TipoParada::RECOGER) {
+                boveda_actual->retirar(parada.codigo_activo, parada.monto);
+                carga.depositar(parada.codigo_activo, parada.monto);
+                std::cout << "     Acción: RECOGER. Éxito.\n";
+            } else {
+                carga.retirar(parada.codigo_activo, parada.monto);
+                boveda_actual->depositar(parada.codigo_activo, parada.monto);
+                std::cout << "     Acción: ENTREGAR. Éxito.\n";
             }
-        } catch (const std::exception& e) {  // Changed to catch std::exception
-            ruta_actual.clear();
-            throw OperacionException("Fallo en la ruta en la bóveda " + parada.boveda->getCodigo() + ": " + e.what());
+            registros_ruta.emplace_back(parada, boveda_actual, this);
+
+        } catch (const OperacionException& e) {
+            limpiarCarga();
+            throw FalloEnRutaException(parada.codigo_boveda, e.what());
         }
     }
-
-    std::cout << "\n--- [Transportador " << nombre << "] RUTA COMPLETADA ---\n";
-    if (carga.total() > 0.01) {
-         std::cerr << "ADVERTENCIA: El transportador finalizó la ruta con carga residual: " << carga.total() << std::endl;
+    std::cout << "--- RUTA COMPLETADA ---\n";
+    if (carga.totalGeneral() > 0.01) {
+        std::cerr << "ADVERTENCIA: El transportador finalizó con carga residual de " << carga.totalGeneral() << "!\n";
     }
-    ruta_actual.clear();
+    limpiarCarga();
+    return registros_ruta;
 }
 
-
-void Transportador::registrarRuta(Boveda* inicio, Boveda* final, const SolicitudActivos& sol){
-    // 1) registro de origen
-    inicio->retirar(sol, this);
-    const Registro& r_or = inicio->getRegistros().back();
-
-    // 2) registro sinterno
-    Registro r_tr(TipoOperacion::TRANSFERENCIA, sol,inicio,this);//CORREGIR
-
-    // 3) registro de destino
-    final->depositar(sol, this);
-    const Registro& r_de = final->getRegistros().back();
-    // 4) validar y almacenar
-
-    RegistroTransportador reg(r_tr, &r_or, &r_de);
-
-    .validar();
-    registrosTransportador.push_back();
+void Transportador::imprimirEstado() const {
+    std::cout << "\n--- Estado del Transportador: " << nombre << " ---\n";
+    std::cout << "  Carga actual:\n";
+    carga.imprimirEstado();
 }

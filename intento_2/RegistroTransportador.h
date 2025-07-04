@@ -11,4 +11,4 @@ struct RegistroTransportador {
         return registro.equals(*origen) && registro.equals(*destino);//AGREGAR EXECPCION
     }
 
-};
+}; 

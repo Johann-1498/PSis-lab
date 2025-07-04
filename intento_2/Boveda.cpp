@@ -1,40 +1,8 @@
 #include "Boveda.h"
-#include "BovedaExceptions.h"
-#include "CodigoActivo.h"
-#include "ActivosExceptions.h"
-#include "Transportador.h"
-#include <stdexcept>
+#include <iostream>
 
-Boveda::Boveda(const std::string& codigo_): codigo(codigo_){}
-
-void Boveda::depositar(const SolicitudActivos& sol, Transportador* t) {
-    try {
-        sol.validar();
-        activos.depositar(sol);
-        registrar(TipoOperacion::DEPOSITO, sol, t);
-    } catch (const std::exception& e) {
-        throw BovedaException(std::string("Error en depósito: ") + e.what());
-    }
-}
-
-void Boveda::retirar(const SolicitudActivos& sol, Transportador* t) {
-    try {
-        sol.validar();  
-        activos.retirar(sol.activos);  //Excepcion de saldo
-        registrar(TipoOperacion::RETIRO, sol, t);
-    } catch (const std::exception& e) {
-        throw BovedaException(std::string("Error en retiro: ") + e.what());
-    }
-}
-
-void Boveda::registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t) {
-    try {
-        registros.emplace_back(tipo, sol, this, t);//OBSERCADOOO
-    } catch (const std::exception& e) {
-        throw BovedaException(std::string("Error al registrar operación: ") + e.what());
-    }
-}
-
-const std::vector<Registro>& Boveda::getRegistros() const {
-    return registros;
-}
+Boveda::Boveda(const std::string& codigo, Plaza* p) : codigo(codigo), plaza(p) {}
+const std::string& Boveda::getCodigo() const { return codigo; }
+void Boveda::depositar(CodigoActivo cod, double monto) { activos.depositar(cod, monto); }
+void Boveda::retirar(CodigoActivo cod, double monto) { activos.retirar(cod, monto); }
+void Boveda::imprimirEstado() const { activos.imprimirEstado(); }

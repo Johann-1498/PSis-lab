@@ -4,7 +4,7 @@
 #include "SolicitudActivosExceptions.h"
 #include "String"
 #include "TipoOperacion.h"
-#include "Plaza"
+#include "Plaza.h"
 
 struct SolicitudActivos {
     std::string dia, mes;
