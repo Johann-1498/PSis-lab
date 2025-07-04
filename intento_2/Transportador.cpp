@@ -53,7 +53,7 @@ void Transportador::ejecutarRuta() {
                 default:
                     throw OperacionException("Tipo de operación inválida en la ruta del transportador.");
             }
-        } catch (const std::exception& e) {  // Changed to catch std::exception
+        } catch (const std::exception& e) { 
             ruta_actual.clear();
             throw OperacionException("Fallo en la ruta en la bóveda " + parada.boveda->getCodigo() + ": " + e.what());
         }
@@ -82,6 +82,6 @@ void Transportador::registrarRuta(Boveda* inicio, Boveda* final, const Solicitud
 
     RegistroTransportador reg(r_tr, &r_or, &r_de);
 
-    .validar();
-    registrosTransportador.push_back();
+    reg.validar();
+    this->registrosTransportador.push_back();
 }

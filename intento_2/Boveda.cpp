@@ -5,7 +5,7 @@
 #include "Transportador.h"
 #include <stdexcept>
 
-Boveda::Boveda(const std::string& codigo_): codigo(codigo_){}
+Boveda::Boveda(const std::string& c, const Activos& a, const Banco& b): codigo(c), activos(a), banco(b){}
 
 void Boveda::depositar(const SolicitudActivos& sol, Transportador* t) {
     try {
@@ -27,9 +27,11 @@ void Boveda::retirar(const SolicitudActivos& sol, Transportador* t) {
     }
 }
 
-void Boveda::registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t) {
+void Boveda::registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t) {//corregir
     try {
+        Registro reg();
         registros.emplace_back(tipo, sol, this, t);//OBSERCADOOO
+        this->banco.registrarOperacionBCR(reg);
     } catch (const std::exception& e) {
         throw BovedaException(std::string("Error al registrar operación: ") + e.what());
     }

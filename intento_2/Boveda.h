@@ -5,6 +5,7 @@
 #include "Registro.h"
 #include "OperacionException.h"
 #include "Plaza.h"
+#include "Banco.h"
 using namespace std;
 
 class Boveda {
@@ -12,11 +13,12 @@ private:
     string codigo;
     Activos activos;
     vector<Registro> registros;
+    Banco banco;
 
-    void registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t);
 
 public:
-    explicit Boveda(const string& codigo, Plaza* p);
+
+    explicit Boveda(const std::string& codigo, const Activos& a, const Banco& b);
     const string& getCodigo() const { return codigo; }
     
     void depositar(const SolicitudActivos& sol, Transportador* t);
@@ -26,4 +28,6 @@ public:
     double totalPorActivo(CodigoActivo cod) const { return activos.totalPorActivo(cod); }
 
     const vector<Registro>& getRegistros() const;
+    void registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t);//Corregir
+
 };

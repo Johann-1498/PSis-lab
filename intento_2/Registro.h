@@ -29,7 +29,7 @@ class Registro {
         { validateInput(sol);}
 
     private:
-        void validateInput(const SolicitudActivos& sol) const {
+        void validateInput(const SolicitudActivos& sol) const {//corregir
             sol.validar();
         }
         
