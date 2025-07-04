@@ -24,7 +24,7 @@ Boveda* Banco::getBoveda(const std::string& codigo_boveda) {
     throw BovedaNoEncontradaException(codigo_boveda);
 }
 
-void Banco::iniciarTrasladoInterbancario(Boveda* origen, Boveda* destino, Transportador* transportador, const SolicitudActivos& solicitud) {
+void Banco::iniciarTrasladoInterbancario(Transportador* transportador, const SolicitudActivos& solicitud) {
     std::cout << "\n======================================================\n";
     std::cout << "[Banco " << nombre << "] Iniciando traslado desde " << origen->getCodigo()
               << " hacia " << destino->getCodigo() << " via " << transportador->getNombre() << ".\n";

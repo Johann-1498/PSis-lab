@@ -5,26 +5,25 @@
 #include "Registro.h"
 #include "OperacionException.h"
 #include "Plaza.h"
+using namespace std;
 
 class Boveda {
 private:
-    std::string codigo;
+    string codigo;
     Activos activos;
-    std::vector<Registro> registros;
-    Plaza* plaza;
+    vector<Registro> registros;
 
-    void registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t = nullptr);
+    void registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t);
 
 public:
-    explicit Boveda(const std::string& codigo, Plaza* p);
-    const std::string& getCodigo() const { return codigo; }
-    Plaza* getPlaza() const { return plaza; }
+    explicit Boveda(const string& codigo, Plaza* p);
+    const string& getCodigo() const { return codigo; }
     
-    void depositar(const SolicitudActivos& sol, Transportador* t = nullptr);
-    void retirar(const SolicitudActivos& sol, Transportador* t = nullptr);
+    void depositar(const SolicitudActivos& sol, Transportador* t);
+    void retirar(const SolicitudActivos& sol, Transportador* t);
     
     double total() const { return activos.total(); }
     double totalPorActivo(CodigoActivo cod) const { return activos.totalPorActivo(cod); }
 
-    const std::vector<Registro>& getRegistros() const;
+    const vector<Registro>& getRegistros() const;
 };

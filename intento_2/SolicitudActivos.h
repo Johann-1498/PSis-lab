@@ -2,9 +2,14 @@
 #include <unordered_map>
 #include "CodigoActivo.h"
 #include "SolicitudActivosExceptions.h"
+#include "String"
+#include "TipoOperacion.h"
+#include "Plaza"
 
 struct SolicitudActivos {
+    std::string dia, mes;
     std::unordered_map<CodigoActivo, double> activos;
+    TipoOperacion tipo_op;
 
     bool empty() const {
         return activos.empty();

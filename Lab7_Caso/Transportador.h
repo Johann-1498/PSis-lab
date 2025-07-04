@@ -16,11 +16,7 @@ public:
       : nombre(n), plaza(p)
     {}
 
-    void programarEntrega(const Registro& reg) {
-        cronograma.push_back(reg);
-    }
-
-    void programarRecogida(const Registro& reg) {
+    void programarOperacion(const Registro& reg) {
         cronograma.push_back(reg);
     }
 
@@ -28,9 +24,8 @@ public:
         return cronograma;
     }
 
-    void verificaciónEntrega(){
-
+    void empezarPlaza(){
+        for()
     }
-
 
 };

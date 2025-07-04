@@ -1,51 +1,41 @@
 // Transportador.cpp
 #include "Transportador.h"
-#include "TransportadorExceptions.h"
 #include "CodigoActivo.h"
 #include "ActivosExceptions.h"
+#include "TransportadorExceptions.h"
+#include "RegistroTransportador.h"
 #include "Boveda.h"
 #include "Plaza.h"
 #include <iostream>
 
-Transportador::Transportador(const std::string& n, const std::string& c)
-  : nombre(n), codigo(c) {}
-
-void Transportador::asignarRuta(const std::vector<ParadaRuta>& ruta) {
-    if (!ruta_actual.empty()) {
-        throw RutaActivaException();
-    }
-    if (ruta.empty()) {
-        throw RutaInvalidaException();
-    }
-    std::cout << "[Transportador " << nombre << "] Ruta asignada con " << ruta.size() << " paradas.\n";
-    ruta_actual = ruta;
-}
+Transportador::Transportador(const std::string& n, const std::string& c) : nombre(n), codigo(c) {}
 
 void Transportador::ejecutarRuta() {
-    std::cout << "\n--- [Transportador " << nombre << "] INICIANDO RUTA ---" << std::endl;
-    if (ruta_actual.empty()) {
-        std::cout << "[Transportador " << nombre << "] No hay ruta programada.\n";
+    std::cout << "\n-  Transportador " << nombre << "Inicio de ruta" << std::endl;
+    if (ruta.empty()) {
+        std::cout << "No hay ruta programada.\n";
         return;
     }
 
-    for (const auto& parada : ruta_actual) {
-        std::cout << "\n-> Dirigiéndose a la bóveda: " << parada.boveda->getCodigo()
+    for (const auto& parada :ruta) {
+        std::cout << "\n-> Camino a la boveda : " << parada.boveda->getCodigo()
                   << " en " << parada.boveda->getPlaza()->ciudad << std::endl;
 
         try {
-            switch (parada.tipo_op) {
+            switch (parada.solicitud.tipo_op) {
                 case TipoOperacion::RETIRO:
-                    std::cout << "   Acción: Recoger activos." << std::endl;
+                    std::cout << "   Operacion: Recoger activos" << std::endl;
                     parada.boveda->retirar(parada.solicitud, this);
                     carga.depositar(parada.solicitud);
-                    std::cout << "   Éxito: Activos recogidos. Carga actual: " << carga.total() << std::endl;
+                    std::cout << "   Exito: Activos recogidos. Carga actual: " << carga.total() << std::endl;
+                    
                     break;
 
                 case TipoOperacion::DEPOSITO:
-                    std::cout << "   Acción: Entregar activos." << std::endl;
+                    std::cout << "   Operacion: Entregar activos." << std::endl;
                     carga.retirar(parada.solicitud.activos);
                     parada.boveda->depositar(parada.solicitud, this);
-                    std::cout << "   Éxito: Activos entregados. Carga actual: " << carga.total() << std::endl;
+                    std::cout << "   Exito: Activos entregados. Carga actual: " << carga.total() << std::endl;
                     break;
                 
                 default:
@@ -62,4 +52,27 @@ void Transportador::ejecutarRuta() {
          std::cerr << "ADVERTENCIA: El transportador finalizó la ruta con carga residual: " << carga.total() << std::endl;
     }
     ruta_actual.clear();
+}
+
+
+void Transportador::registrarRuta(Boveda* inicio, Boveda* final, const SolicitudActivos& sol){
+    RegistroTransportador rt;
+
+    // 1) registro de origen
+    inicio->retirar(sol, this);
+    const Registro& r_or = inicio->getRegistros().back();
+    rt.setOrigen(r_or);
+
+    // 2) registro sinterno
+    Registro r_tr(TipoOperacion::TRANSFERENCIA, sol,inicio,this);
+    rt.setTransporte(r_tr);
+
+    // 3) registro de destino
+    final->depositar(sol, this);
+    const Registro& r_de = final->getRegistros().back();
+    rt.setDestino(r_de);
+
+    // 4) validar y almacenar
+    rt.validar();
+    registrosTransportador.push_back(rt);
 }

@@ -1,47 +1,56 @@
 #pragma once
-#include <chrono>
 #include "TipoOperacion.h"
 #include "SolicitudActivos.h"
 #include "RegistroExceptions.h"
+#include "String"
 
 // Forward declarations
 class Boveda;
 class Transportador;
 
 class Registro {
-public:
-    const std::chrono::system_clock::time_point fecha;
-    const TipoOperacion tipo;
-    const SolicitudActivos solicitud;
-    Boveda* const boveda_afectada;
-    Transportador* const transportador;
-    const double monto_total;
+    public:
+        const String dia;
+        const String mes;
+        const SolicitudActivos solicitud;
+        Boveda* const boveda_afectada;
+        Transportador* const transportador;
+        const double monto_total;
 
-    Registro(TipoOperacion tipo_, const SolicitudActivos& sol, Boveda* boveda, Transportador* trans = nullptr)
-      : fecha(std::chrono::system_clock::now()),
-        tipo(tipo_),
-        solicitud(sol),
-        boveda_afectada(boveda),
-        transportador(trans),
-        monto_total(calculateTotal(sol))
-    {
-        validateInput(sol);
-    }
 
-private:
-    void validateInput(const SolicitudActivos& sol) const {
-        sol.validar(); // Use SolicitudActivos's validation
-    }
+        Registro(String d, String m, const SolicitudActivos& sol, Boveda* boveda, Transportador* trans)//Solicitud y bveda estan en la paradaRuta(DENTRO DE PLAZA)
+        :   dia(d),
+            mes(m),
+            solicitud(sol),
+            boveda_afectada(boveda),
+            transportador(trans),
+            monto_total(calculateTotal(sol))
 
-    double calculateTotal(const SolicitudActivos& sol) const {
-        double total = 0.0;
-        for (const auto& item : sol.activos) {
-            total += item.second;
+        { validateInput(sol);}
+
+    private:
+        void validateInput(const SolicitudActivos& sol) const {
+            sol.validar();
         }
         
-        if (total <= 0) {
-            throw RegistroMontoInvalidoException(total);
+        bool equals(const Registro& otro) const{//MEJORAR CORREGIR
+            if (tipo != otro.tipo) return false;
+            if (this.monto_total - otro.monto_total != 0) return false;
+            if ((transportador == nullptr) != (otro.transportador == nullptr)) return false;
+            if ( transportador->getNombre() != otro.transportador->getNombre()) return false;
+            return true;
+
         }
-        return total;
-    }
+
+        double calculateTotal(const SolicitudActivos& sol) const {
+            double total = 0.0;
+            for (const auto& item : sol.activos) {
+                total += item.second;
+            }
+            
+            if (total <= 0) {
+                throw RegistroMontoInvalidoException(total);
+            }
+            return total;
+        }
 };

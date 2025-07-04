@@ -5,13 +5,7 @@
 #include "Transportador.h"
 #include <stdexcept>
 
-Boveda::Boveda(const std::string& codigo_, Plaza* p) 
-    : codigo(codigo_), plaza(p) 
-{
-    if (p == nullptr) {
-        throw std::invalid_argument("La bóveda debe pertenecer a una plaza válida.");
-    }
-}
+Boveda::Boveda(const std::string& codigo_): codigo(codigo_){}
 
 void Boveda::depositar(const SolicitudActivos& sol, Transportador* t) {
     try {
@@ -25,8 +19,8 @@ void Boveda::depositar(const SolicitudActivos& sol, Transportador* t) {
 
 void Boveda::retirar(const SolicitudActivos& sol, Transportador* t) {
     try {
-        sol.validar();  // Added validation for consistency
-        activos.retirar(sol.activos);  // Fixed to use sol.activos
+        sol.validar();  
+        activos.retirar(sol.activos);  //Excepcion de saldo
         registrar(TipoOperacion::RETIRO, sol, t);
     } catch (const std::exception& e) {
         throw BovedaException(std::string("Error en retiro: ") + e.what());
@@ -35,7 +29,7 @@ void Boveda::retirar(const SolicitudActivos& sol, Transportador* t) {
 
 void Boveda::registrar(TipoOperacion tipo, const SolicitudActivos& sol, Transportador* t) {
     try {
-        registros.emplace_back(tipo, sol, this, t);
+        registros.emplace_back(tipo, sol, this, t);//OBSERCADOOO
     } catch (const std::exception& e) {
         throw BovedaException(std::string("Error al registrar operación: ") + e.what());
     }

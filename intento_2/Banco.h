@@ -14,7 +14,7 @@ private:
     std::string nombre;
     std::vector<std::unique_ptr<Boveda>> bovedas;
     double saldo_BCR; // Saldo de control
-    std::vector<Registro> libro_mayor; // Registro central del banco
+    std::vector<Registro> registros; // Registro central del banco
 
 public:
     explicit Banco(const std::string& nombre);

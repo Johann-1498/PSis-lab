@@ -6,30 +6,32 @@
 #include "OperacionException.h"
 #include "TipoOperacion.h"
 #include "SolicitudActivos.h"   // <-- ESTA LÍNEA ES LA SOLUCIÓN
+#include "Plaza.h"
+#include "Registro.h"
+#include "Boveda.h"
+#include "TransportadorExceptions.h"
+#include "RegistroTransportador.h"
 
-// Forward declaration
-class Boveda;
-
-// Define una parada en la ruta del transportador
-struct ParadaRuta {
-    Boveda* boveda;
-    TipoOperacion tipo_op;
-    SolicitudActivos solicitud; // Ahora el compilador sabe qué es esto
-};
-
+class Plaza;
 class Transportador {
 private:
     std::string nombre;
-    std::string codigo;
     Activos carga;
-    std::vector<ParadaRuta> ruta_actual;
+    Plaza ruta;
+    std::vector<RegistroTransportador> registrosTransportador;
 
 public:
     Transportador(const std::string& n, const std::string& c);
+    
     const std::string& getNombre() const { return nombre; }
-    
-    void asignarRuta(const std::vector<ParadaRuta>& ruta);
     void ejecutarRuta();
-    
     double totalEnCarga() const { return carga.total(); }
+
+    void registrarRuta(Boveda* inicio, Boveda* final, Activos activos){
+
+    }
+
+
 };
+
+

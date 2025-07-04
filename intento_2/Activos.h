@@ -17,26 +17,33 @@
 /// Códigos de activ
 
 class Activo {
-public:
-    virtual ~Activo() = default;
-    virtual void depositar(double monto) = 0;
-    virtual void retirar(double monto)  = 0;
-    virtual double total() const        = 0;
+    protected:
+        CodigoActivo codigo;
+    public:
+        virtual ~Activo() = default;
+        virtual void depositar(double monto) = 0;
+        virtual void retirar(double monto)  = 0;
+        virtual double total() const        = 0;
 };
 
 class Moneda : public Activo {
+private:
+    std::string tipo;
+    double valorTotal;
+    std::vector<int> validos; 
+    std::unordered_map<int,int> billetes;
 public:
     explicit Moneda(CodigoActivo codigo)
-      : codigo(codigo), valorTotal(0.0)
+      : codigo(codigo), valorTotal
     {
         switch(codigo) {
             case CodigoActivo::SOLES:
                 validos = {200,100,50,20,10};
-                nombre = "Soles";
+                tipo = "Soles";
                 break;
             case CodigoActivo::DOLARES:
                 validos = {100,50,20,10,5,2,1};
-                nombre = "Dolares";
+                tipo = "Dolares";
                 break;
             default:
                 throw TipoMonedaInvalidoException(codigo);
@@ -61,12 +68,7 @@ public:
         return valorTotal;
     }
 
-private:
-    CodigoActivo codigo;
-    std::string nombre;
-    double valorTotal;
-    std::vector<int> validos;
-    std::unordered_map<int,int> billetes;
+
 };
 
 class Bono : public Activo {
@@ -128,17 +130,17 @@ public:
     void depositar(const SolicitudActivos& sol) {
     sol.validar(); // Validar antes de procesar
     
-    for (const auto& pair : sol.activos) {
-        CodigoActivo cod = pair.first;
-        double m = pair.second;
-        
-        auto it = mapa.find(cod);
-        if (it == mapa.end()) {
-            throw ActivoNoExisteException(cod);
+        for (const auto& pair : sol.activos) {
+            CodigoActivo cod = pair.first;
+            double m = pair.second;
+            
+            auto it = mapa.find(cod);
+            if (it == mapa.end()) {
+                throw ActivoNoExisteException(cod);
+            }
+            it->second->depositar(m);
         }
-        it->second->depositar(m);
     }
-}
 
 
     void retirar(const std::unordered_map<CodigoActivo,double>& sol) {
