@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
-enum class CodigoActivo : String {
+enum class CodigoActivo {
     SOLES,
     DOLARES,
     BONO,
-    JOYA 
+    JOYA
 };

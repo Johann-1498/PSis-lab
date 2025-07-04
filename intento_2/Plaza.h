@@ -3,7 +3,8 @@
 #include <string>
 #include <vector>
 #include "TransportadorExceptions.h"
-
+class Boveda;
+struct SolicitudActivos;
 class Plaza {
 public:
     std::string ciudad;
@@ -28,5 +29,5 @@ public:
 // Define una parada en la ruta del transportador
 struct ParadaRuta {
     Boveda* boveda;
-    SolicitudActivos solicitud; 
+    SolicitudActivos solicitud;
 };

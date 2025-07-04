@@ -1,12 +1,12 @@
 // ActivosExceptions.h
 #pragma once
 #include "OperacionException.h"
-#include "CodigoActivo.h"  // Incluir el archivo del enum
+#include "CodigoActivo.h"  
 
 class ActivosException : public OperacionException {
 public:
     explicit ActivosException(const std::string& message)
-        : OperacionException("[Activos] " + message) {}
+        : OperacionException("-  Activos " + message) {}
 };
 
 class ActivoNoExisteException : public ActivosException {

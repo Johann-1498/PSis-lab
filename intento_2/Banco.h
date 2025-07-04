@@ -27,4 +27,6 @@ public:
     void registrarOperacionBCR(const Registro& reg);
     double getSaldoBCR() const { return saldo_BCR; }
     double totalEnBovedas() const;
+    std::vector<Registro> consultarSaldosPorDia(const std::string& dia) const;
+    std::vector<Registro> consultarSaldosPorMes(const std::string& mes) const;
 };

@@ -45,3 +45,21 @@ double Banco::totalEnBovedas() const {
             return sum + boveda_ptr->total();
         });
 }
+
+std::vector<Registro> Banco::consultarSaldosPorDia(const std::string& dia) const {
+    std::vector<Registro> resultado;
+    for (const auto& reg : registrosGenerales) {
+        if (reg.dia == dia)
+            resultado.push_back(reg);
+    }
+    return resultado;
+}
+
+std::vector<Registro> Banco::consultarSaldosPorMes(const std::string& mes) const {
+    std::vector<Registro> resultado;
+    for (const auto& reg : registrosGenerales) {
+        if (reg.mes == mes)
+            resultado.push_back(reg);
+    }
+    return resultado;
+}

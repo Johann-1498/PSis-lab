@@ -18,9 +18,9 @@ class Registro {
         const double monto_total;
 
 
-        Registro(String d, String m, const SolicitudActivos& sol, Boveda* boveda, Transportador* trans)//Solicitud y bveda estan en la paradaRuta(DENTRO DE PLAZA)
-        :   dia(d),
-            mes(m),
+        Registro(const SolicitudActivos& sol, Boveda* boveda, Transportador* trans)//Solicitud y bveda estan en la paradaRuta(DENTRO DE PLAZA)
+        :   dia(sol.dia),
+            mes(sol.mes),
             solicitud(sol),
             boveda_afectada(boveda),
             transportador(trans),

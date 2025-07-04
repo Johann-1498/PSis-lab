@@ -31,6 +31,7 @@ void Transportador::ejecutarRuta() {
                     parada.boveda->retirar(parada.solicitud, this);
                     carga.depositar(parada.solicitud);
                     std::cout << "   Exito: Activos recogidos. Carga actual: " << carga.total() << std::endl;
+
                     if(primeraRuta){
                         inicio=parada.boveda;
                         primeraRuta=false;
@@ -69,14 +70,12 @@ void Transportador::ejecutarRuta() {
 
 void Transportador::registrarRuta(Boveda* inicio, Boveda* final, const SolicitudActivos& sol){
     // 1) registro de origen
-    inicio->retirar(sol, this);
     const Registro& r_or = inicio->getRegistros().back();
 
     // 2) registro sinterno
     Registro r_tr(TipoOperacion::TRANSFERENCIA, sol,inicio,this);//CORREGIR
 
     // 3) registro de destino
-    final->depositar(sol, this);
     const Registro& r_de = final->getRegistros().back();
     // 4) validar y almacenar
 

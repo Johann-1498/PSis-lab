@@ -6,15 +6,9 @@
 #include <algorithm>
 #include <stdexcept>
 #include <memory>
-#include "CodigoActivo.h"  // Incluir el enum
+#include "CodigoActivo.h"
 #include "SolicitudActivos.h"
-#include "ActivosExceptions.h" // include exceptions activos
-
-// ... (El código de Activo, Moneda, Bono, Joya, y Activos que proporcionaste va aquí, sin cambios)
-// Tu código para Activos.h era funcional y completo para este escenario.
-// Lo incluyo aquí para que la respuesta sea autocontenida.
-
-/// Códigos de activ
+#include "ActivosExceptions.h" 
 
 class Activo {
     protected:
@@ -33,9 +27,11 @@ private:
     std::vector<int> validos; 
     std::unordered_map<int,int> billetes;
 public:
-    explicit Moneda(CodigoActivo codigo)
-      : codigo(codigo), valorTotal
+    explicit Moneda(CodigoActivo c)
     {
+        this->codigo=c;
+        this->valorTotal=0;
+
         switch(codigo) {
             case CodigoActivo::SOLES:
                 validos = {200,100,50,20,10};
@@ -50,13 +46,18 @@ public:
         }
     }
 
-    void depositar(double monto) override {
-        if (monto < 0) {
-            throw std::invalid_argument("Monto negativo no permitido");
+    void depositar(const std::unordered_map<int, int>& map_billetes) {
+        double subtotal = 0;
+        for (const auto& par : map_billetes) {
+            int denom = par.first;
+            int cant  = par.second;
+            if (std::find(validos.begin(), validos.end(), denom) == validos.end())
+                throw std::invalid_argument("Denominación no válida para " + tipo);
+            billetes[denom] += cant;
+            subtotal += denom * cant;
         }
-        valorTotal += monto;
+        valorTotal += subtotal;
     }
-
     void retirar(double monto) override {
         if (monto > valorTotal) {
             throw SaldoActivoInsuficienteException(codigo, monto, valorTotal);
@@ -128,26 +129,44 @@ public:
     }
 
     void depositar(const SolicitudActivos& sol) {
-    sol.validar(); // Validar antes de procesar
-    
-        for (const auto& pair : sol.activos) {
-            CodigoActivo cod = pair.first;
-            double m = pair.second;
-            
+        sol.validar(); // Valida
+
+        for (const auto& par : sol.detalle_billetes) {
+            CodigoActivo cod = par.first;
+            const auto& detalle = par.second;//billetes de la solicitud
+
             auto it = mapa.find(cod);
             if (it == mapa.end()) {
                 throw ActivoNoExisteException(cod);
             }
-            it->second->depositar(m);
+            //Monedas
+            if (cod == CodigoActivo::SOLES || cod == CodigoActivo::DOLARES) {
+                std::unordered_map<int, int> detalle_int;
+                for (const auto& sub : detalle) {
+                    int denominacion = std::stoi(sub.first); // string a int
+                    int cantidad = sub.second;
+                    detalle_int[denominacion] = cantidad;
+                }
+                Moneda* moneda = dynamic_cast<Moneda*>(it->second.get());
+                if (!moneda)
+                    throw std::invalid_argument("Solo moneda acepta desglose de billetes");
+                moneda->depositar(detalle_int);
+            } else {
+                // Para joyas y bonos
+                int total = 0;
+                for (const auto& sub : detalle)
+                    total += sub.second;
+                it->second->depositar(static_cast<double>(total));
+            }
         }
     }
 
 
     void retirar(const std::unordered_map<CodigoActivo,double>& sol) {
         // Transacción de prueba: verificar si todo se puede retirar antes de hacerlo
-        for (const auto& pair : sol) {
-            CodigoActivo cod = pair.first;
-            double m = pair.second;
+        for (const auto& par : sol) {
+            CodigoActivo cod = par.first;
+            double m = par.second;
             auto it = mapa.find(cod);
             if (it == mapa.end())
                 throw ActivoNoExisteException(cod);
@@ -155,10 +174,11 @@ public:
                 throw SaldoActivoInsuficienteException(cod, m, it->second->total());
             }
         }
-        // Si todas las verificaciones pasan, proceder con el retiro
-        for (const auto& pair : sol) {
-            CodigoActivo cod = pair.first;
-            double m = pair.second;
+
+        // se retiran
+        for (const auto& par : sol) {
+            CodigoActivo cod = par.first;
+            double m = par.second;
             mapa.find(cod)->second->retirar(m);
         }
     }

@@ -1,7 +1,7 @@
 #pragma once
 #include "OperacionException.h"
 #include <string>
-
+using namespace std;
 class TransportadorException : public OperacionException {
 public:
     explicit TransportadorException(const std::string& message)

@@ -1,118 +1,64 @@
+#include "Banco.h"
+#include "Boveda.h"
+#include "Activos.h"
+#include "SolicitudActivos.h"
+#include "Transportador.h"
+#include "Plaza.h"
 #include <iostream>
-#include <vector>
-#include <string>
-#include <iomanip>
-
-enum class Operacion { RETIRO, DEPOSITO, INICIAL, TRASLADO };
-
-struct Mov {
-    int d, m;
-    Operacion tipo;
-    double cantidad;
-};
-
-// Convierte Operacion a texto
-std::string aTexto(Operacion op) {
-    switch (op) {
-        case Operacion::RETIRO:   return "Retiro";
-        case Operacion::DEPOSITO: return "Deposito";
-        case Operacion::INICIAL:  return "Inicial";
-        case Operacion::TRASLADO: return "Traslado";
-    }
-    return "";
-}
+#include <memory>
 
 int main() {
-    std::vector<Mov> historial = {
-        { 1,  1, Operacion::INICIAL,  5000 },
-        { 5,  1, Operacion::DEPOSITO,  1500 },
-        {10,  1, Operacion::RETIRO,   1200 },
-        {15,  2, Operacion::DEPOSITO,  2000 },
-        {28,  2, Operacion::RETIRO,   1000 },
-        { 3,  3, Operacion::DEPOSITO,  3000 },
-        {14,  3, Operacion::RETIRO,    500 },
-        { 1,  4, Operacion::DEPOSITO,  2500 },
-        {20,  4, Operacion::RETIRO,   1800 },
-        { 7,  5, Operacion::DEPOSITO,  4000 },
-        {21,  5, Operacion::TRASLADO,  1000 },
-        {10,  6, Operacion::DEPOSITO,  3500 },
-        {30,  6, Operacion::RETIRO,   1500 },
-        { 2,  7, Operacion::INICIAL, 10000 },
-        { 8,  7, Operacion::DEPOSITO,  2500 },
-        {16,  7, Operacion::RETIRO,   1200 },
-        { 5,  8, Operacion::DEPOSITO,  3000 },
-        {25,  8, Operacion::RETIRO,   2200 },
-        {12,  9, Operacion::DEPOSITO,  1800 },
-        {18,  9, Operacion::RETIRO,    900 },
-        { 4, 10, Operacion::DEPOSITO,  5000 },
-        {29, 10, Operacion::RETIRO,   2500 },
-        {11, 11, Operacion::DEPOSITO,  2700 },
-        {23, 11, Operacion::RETIRO,   1300 },
-        { 6, 12, Operacion::DEPOSITO,  3200 },
-        {31, 12, Operacion::RETIRO,   2100 }
-    };
+    Banco banco("BANCO CENTRAL");
 
-    while (true) {
-        std::cout << "\n=== MENU BCR ===\n"
-                  << "1 Ver saldo por dia\n"
-                  << "2 Ver saldo por mes\n"
-                  << "0 Salir\n"
-                  << "Opcion: ";
-        int opc;
-        std::cin >> opc;
+    auto activos1 = std::make_unique<Activos>();
+    auto activos2 = std::make_unique<Activos>();
+    auto activos3 = std::make_unique<Activos>();
+    auto activos4 = std::make_unique<Activos>();
 
-        if (opc == 0) {
-            break;
-        }
+    banco.agregarBoveda("B1", activos1.get());
+    banco.agregarBoveda("B2", activos2.get());
+    banco.agregarBoveda("B3", activos3.get());
+    banco.agregarBoveda("B4", activos4.get());
 
-        if (opc == 1 || opc == 2) {
-            int filDia = 0, filMes = 0;
-            if (opc == 1) {
-                std::cout << "Ingrese dia: ";  std::cin >> filDia;
-                std::cout << "Ingrese mes: ";  std::cin >> filMes;
-            } else {
-                std::cout << "Ingrese mes: ";  std::cin >> filMes;
-            }
+    SolicitudActivos sol1, sol2, sol3, sol4;
+    sol1.dia = "01"; sol1.mes = "07"; sol1.tipo_op = TipoOperacion::DEPOSITO;
+    sol2.dia = "01"; sol2.mes = "07"; sol2.tipo_op = TipoOperacion::RETIRO;
+    sol3.dia = "02"; sol3.mes = "07"; sol3.tipo_op = TipoOperacion::DEPOSITO;
+    sol4.dia = "02"; sol4.mes = "07"; sol4.tipo_op = TipoOperacion::RETIRO;
 
-            double saldoAcum = 0;
-            bool any = false;
-            std::cout << "\nFecha   Tipo       Monto     Saldo\n"
-                      << "-----------------------------------\n";
+    sol1.detalle_billetes[CodigoActivo::SOLES] = {{"100", 2}};
+    sol2.detalle_billetes[CodigoActivo::DOLARES] = {{"20", 1}};
+    sol3.detalle_billetes[CodigoActivo::SOLES] = {{"50", 1}};
+    sol4.detalle_billetes[CodigoActivo::BONO] = {{"1", 5}};
 
-            for (auto &r : historial) {
-                if ((opc == 1 && r.d == filDia && r.m == filMes) ||
-                    (opc == 2 && r.m == filMes))
-                {
-                    any = true;
-                    if (r.tipo == Operacion::DEPOSITO || r.tipo == Operacion::INICIAL)
-                        saldoAcum += r.cantidad;
-                    else
-                        saldoAcum -= r.cantidad;
+    Plaza plaza("LIMA");
+    Boveda* b1 = banco.getBoveda("B1");
+    Boveda* b2 = banco.getBoveda("B2");
+    Boveda* b3 = banco.getBoveda("B3");
+    Boveda* b4 = banco.getBoveda("B4");
 
-                    std::cout << std::left
-                              << std::setw(8) << (std::to_string(r.d) + "/" + std::to_string(r.m))
-                              << std::setw(10) << aTexto(r.tipo)
-                              << std::setw(10) << std::fixed << std::setprecision(2) << r.cantidad
-                              << std::fixed << std::setprecision(2) << saldoAcum
-                              << "\n";
-                }
-            }
+    ParadaRuta pr1{b1, sol1};
+    ParadaRuta pr2{b2, sol2};
+    ParadaRuta pr3{b3, sol3};
+    ParadaRuta pr4{b4, sol4};
+    plaza.rutas = {pr1, pr2, pr3, pr4};
 
-            if (!any) {
-                std::cout << "No hay movimientos registrados.\n";
-            } else {
-                if (opc == 1)
-                    std::cout << "Saldo final para " << filDia << "/" << filMes << ": ";
-                else
-                    std::cout << "Saldo final para mes " << filMes << ": ";
-                std::cout << std::fixed << std::setprecision(2) << 1300 << "\n";
-            }
+    Transportador transportador("Trans1", "T1");
+    banco.iniciarTrasladoInterbancario(&transportador);
 
-        } else {
-            std::cout << "Opcion invalida\n";
-        }
+    auto regsDia = banco.consultarSaldosPorDia("01");
+    std::cout << "Saldos para el día 01:\n";
+    for (const auto& r : regsDia) {
+        std::cout << "Boveda: " << r.boveda_afectada->getCodigo()
+                  << " Monto: " << r.monto_total << std::endl;
+    }
+    auto regsMes = banco.consultarSaldosPorMes("07");
+    std::cout << "Saldos para el mes 07:\n";
+    for (const auto& r : regsMes) {
+        std::cout << "Boveda: " << r.boveda_afectada->getCodigo()
+                  << " Monto: " << r.monto_total << std::endl;
     }
 
-    std::cout << "Fin del programa.\n";
     return 0;
 }
+
