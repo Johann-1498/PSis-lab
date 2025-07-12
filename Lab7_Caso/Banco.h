@@ -7,6 +7,8 @@
 #include "Registro.h"
 #include "Boveda.h"
 
+class Transportador; // Declaración adelantada
+
 class Banco {
 private:
     Plaza plaza;
@@ -35,10 +37,11 @@ public:
         transportadoras.push_back(t);
     }
 
-    /*Operaciones*/
-    void deposito(Boveda* a, Bobeda* b) {
-        bovedas.push_back(b);
+    void deposito(Boveda* origen, Boveda* destino, const Boveda::SolicitudActivos& sol) {
+        origen->transportar(*destino, sol);
         
+        // Registrar operación en el banco
+        Registro reg(TipoOperacion::TRASLADO, sol, &plaza, nullptr, this, this);
+        registrarOperacion(reg);
     }
-
 };
