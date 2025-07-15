@@ -16,7 +16,7 @@ private:
 
     void generarPlanos(); 
     void construirBuckets(); // Asocia usuarios a buckets por su firma hash
-    int calcularFirma(const Usuario& u); // Calcula la firma de un usuario
+    void calcularFirma(); // Calcula la firma de un usuario
     int contarEnComun(const Usuario& a, const Usuario& b); // Canciones en común
     double calcularDistanciaEuclidiana(const Usuario& usuario1, const Usuario& usuario2); // Similitud
 
