@@ -7,8 +7,10 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <queue>
+#include <condition_variable>
+#include <functional>
 
-/* Los valores en la lista aleatoria estarán en el rango 0 <= valor < RMAX */
 const int RMAX = 100;
 
 // Prototipos
@@ -19,5 +21,25 @@ void print(int a[], int n, const char* title);
 void Read_list(int a[], int n);
 void Odd_even_sort(int a[], int n);
 void comp_swap(int a[], int i, int j, std::mutex& mtx);
+
+// Clase ThreadPool
+class ThreadPool {
+public:
+    ThreadPool(size_t num_threads);
+    ~ThreadPool();
+
+    void EnqueueJob(std::function<void()> job);
+
+    std::queue<std::function<void()>> jobs;
+
+private:
+    void WorkerThread();
+
+    size_t num_threads;
+    std::vector<std::thread> worker_threads;
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool stop_all;
+};
 
 #endif

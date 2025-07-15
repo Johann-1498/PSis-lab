@@ -1,5 +1,6 @@
-#include "oddTrace.h"
+#include "oddtrace.h"
 #include <iostream>
+#include <functional>
 
 ThreadPool::ThreadPool(size_t num_threads) : num_threads(num_threads), stop_all(false) {
     worker_threads.reserve(num_threads);
@@ -74,7 +75,7 @@ void Generate_list(int a[], int n) {
         a[i] = rand() % RMAX;
 }
 
-void Print_list(int a[], int n, const char* title) {
+void print(int a[], int n, const char* title) {
     printf("%s:\n", title);
     for (int i = 0; i < n; i++)
         printf("%d ", a[i]);

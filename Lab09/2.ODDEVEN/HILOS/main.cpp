@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "oddTrace.h"
+#include "oddtrace.h"
 
 int main(int argc, char* argv[]) {
     int n;
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     // Generar o leer lista
     if (g_i == 'g') {
         Generate_list(a, n);
-        Print_list(a, n, "Lista original");
+        print(a, n, "Lista original");
     } else {
         Read_list(a, n);
     }
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     Odd_even_sort(a, n);
 
     // Mostrar resultado final
-    Print_list(a, n, "Lista ordenada");
+    print(a, n, "Lista ordenada");
     
     // Liberar memoria
     free(a);
