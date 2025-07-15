@@ -1,4 +1,4 @@
-#include "oddTrace.h"
+#include "oddtrace.h"
 #include <iostream>
 
 void Usage(const char* prog_name) {

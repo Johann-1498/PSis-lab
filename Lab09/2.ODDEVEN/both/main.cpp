@@ -1,4 +1,4 @@
-#include "oddTrace.h"
+#include "oddtrace.h"
 
 int main(int argc, char* argv[]) {
     int n;
