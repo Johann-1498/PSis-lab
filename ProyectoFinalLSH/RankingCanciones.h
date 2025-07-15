@@ -1,62 +1,41 @@
+// --- Archivo: RankingCanciones.h (CORREGIDO) ---
 #pragma once
 #include <vector>
 #include <iostream>
 #include <unordered_map>
-#include "cancion.h"
+#include <algorithm> // Para std::make_heap y std::sort_heap
+#include <functional>
+#include "Cancion.h"
 
 class RankingCanciones {
 private:
     std::vector<Cancion> heap;
 
-    void maxHeapify(int i) {
-        int largest = i;
-        int l = 2 * i + 1;
-        int r = 2 * i + 2;
-
-        if (l < heap.size() && heap[largest] < heap[l]) largest = l;
-        if (r < heap.size() && heap[largest] < heap[r]) largest = r;
-
-        if (largest != i) {
-            std::swap(heap[i], heap[largest]);
-            maxHeapify(largest);
-        }
-    }
-
-    void construirHeap() {
-        for (int i = heap.size() / 2 - 1; i >= 0; --i)
-            maxHeapify(i);
-    }
-
 public:
     void insertarCanciones(const std::unordered_map<int, Cancion>& cancionesMap) {
-        for (const auto& [id, c] : cancionesMap)
-            heap.push_back(c);
-        construirHeap();
+        heap.reserve(cancionesMap.size());
+        for (const auto& par : cancionesMap) {
+            heap.push_back(par.second);
+        }
+
+        // --- SOLUCIÓN AL CRASH ---
+        // Se reemplaza la construcción manual y con hilos (que causaba el error)
+        // por la función estándar de C++. Es segura, correcta y muy optimizada.
+        std::make_heap(heap.begin(), heap.end());
     }
 
     void mostrarTop(int n) {
         std::vector<Cancion> copia = heap;
-        for (int i = 0; i < n && !copia.empty(); ++i) {
-            std::cout << "Cancion ID: " << copia[0].id
-                      << "-Promedio: " << copia[0].promedio() << "\n";
-            std::swap(copia[0], copia.back());
-            copia.pop_back();
-            heapifyTemporal(copia, 0);
-        }
-    }
+        
+        // Convierte la copia del heap en un vector ordenado de menor a mayor.
+        // Es más eficiente que extraer elementos uno por uno.
+        std::sort_heap(copia.begin(), copia.end());
 
-private:
-    void heapifyTemporal(std::vector<Cancion>& h, int i) {
-        int largest = i;
-        int l = 2 * i + 1;
-        int r = 2 * i + 2;
-
-        if (l < h.size() && h[largest] < h[l]) largest = l;
-        if (r < h.size() && h[largest] < h[r]) largest = r;
-
-        if (largest != i) {
-            std::swap(h[i], h[largest]);
-            heapifyTemporal(h, largest);
+        int count = 0;
+        // Se itera desde el final del vector (los elementos más grandes) hacia atrás.
+        for (auto it = copia.rbegin(); it != copia.rend() && count < n; ++it, ++count) {
+             std::cout << "Cancion ID: " << it->id
+                      << " - Promedio: " << it->promedio() << "\n";
         }
     }
 };

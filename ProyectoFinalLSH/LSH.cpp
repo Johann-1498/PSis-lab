@@ -1,69 +1,114 @@
+// --- Archivo: LSH.cpp (MODIFICADO) ---
 #include "LSH.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
 #include <random>
-
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <unordered_set>
 
 using namespace std;
 
+// El constructor ahora es mucho más simple
 LSH::LSH(int hashes, int totalCanciones, unordered_map<int, Usuario>& usuarios)
     : numHashes(hashes), numCanciones(totalCanciones), usuariosRef(&usuarios) {
-    generarPlanos();
+    // Ya no llamamos a generarPlanos()
+    calcularFirmas();
     construirBuckets();
 }
 
-void LSH::generarPlanos() {
-    mt19937 gen(random_device{}());
-    normal_distribution<double> dist(0.0, 1.0);
-    planos.resize(numHashes, vector<double>(numCanciones));
-    for (int i = 0; i < numHashes; ++i)
-        for (int j = 0; j < numCanciones; ++j)
-            planos[i][j] = dist(gen);
+// Se elimina la función generarPlanos() por completo.
+
+void LSH::calcularFirmas() {
+    unsigned int nHilos = thread::hardware_concurrency();
+    vector<thread> hilos;
+    
+    // Convertimos el mapa a un vector para un acceso seguro por índice en los hilos
+    vector<pair<const int, Usuario>*> usuariosVec;
+    usuariosVec.reserve(usuariosRef->size());
+    for(auto it = usuariosRef->begin(); it != usuariosRef->end(); ++it) {
+        usuariosVec.push_back(&(*it));
+    }
+
+    int rango = (usuariosVec.size() + nHilos - 1) / nHilos;
+
+    for (unsigned int t = 0; t < nHilos; ++t) {
+        int inicio = t * rango;
+        int fin = min(inicio + rango, (int)usuariosVec.size());
+        if(inicio >= fin) continue;
+
+        hilos.emplace_back([this, inicio, fin, &usuariosVec]() {
+            // Cada hilo tiene su propio generador de números aleatorios
+            normal_distribution<double> dist(0.0, 1.0);
+
+            for (int i = inicio; i < fin; ++i) {
+                Usuario& user = usuariosVec[i]->second;
+                int firma = 0;
+                for (int j = 0; j < numHashes; ++j) {
+                    double suma = 0.0;
+                    
+                    // --- LA MAGIA ESTÁ AQUÍ ---
+                    // Creamos un generador para este hash (j). Usar 'j' como seed
+                    // garantiza que para el mismo hash, se generará la misma
+                    // secuencia de números aleatorios en todas las llamadas.
+                    mt19937 gen(j); 
+
+                    for (int c : user.cancionesEscuchadas) {
+                        if (c < numCanciones) {
+                            // En lugar de buscar en una matriz, generamos el número al vuelo.
+                            // Para que sea determinista para la canción 'c',
+                            // descartamos 'c' números aleatorios.
+                            gen.discard(c);
+                            suma += dist(gen);
+                            
+                            // Reseteamos el generador para la siguiente canción,
+                            // pero con el mismo seed 'j'
+                            gen.seed(j); 
+                        }
+                    }
+                    if (suma > 0) firma |= (1 << j);
+                }
+                user.firma = firma;
+            }
+        });
+    }
+    for (auto& h : hilos) h.join();
 }
+
+
+// El resto de las funciones de LSH.cpp no necesitan cambios.
+// (Las pego abajo para que tengas el archivo completo)
 
 void LSH::construirBuckets() {
-    for (const auto& [id, user] : *usuariosRef) {
-        int firma = calcularFirma(user);
-        buckets[firma].push_back(id);
+    for (auto const& [id, user] : *usuariosRef) {
+        buckets[user.firma].push_back(id);
     }
-}
-
-int LSH::calcularFirma(const Usuario& u) {
-    int firma = 0;
-    for (int i = 0; i < numHashes; ++i) {
-        double suma = 0.0;
-        for (int c : u.cancionesEscuchadas)
-            if (c < numCanciones)
-                suma += planos[i][c];
-        if (suma > 0)
-            firma |= (1 << i);
-    }
-    return firma;
 }
 
 int LSH::contarEnComun(const Usuario& a, const Usuario& b) {
     int comunes = 0;
-    for (int c : a.cancionesEscuchadas)
-        if (b.cancionesEscuchadas.count(c))
-            ++comunes;
+    const auto& set_pequeno = (a.cancionesEscuchadas.size() < b.cancionesEscuchadas.size()) ? a.cancionesEscuchadas : b.cancionesEscuchadas;
+    const auto& set_grande = (a.cancionesEscuchadas.size() >= b.cancionesEscuchadas.size()) ? a.cancionesEscuchadas : b.cancionesEscuchadas;
+    for (int c : set_pequeno) {
+        if (set_grande.count(c)) ++comunes;
+    }
     return comunes;
 }
 
-double LSH::calcularDistanciaEuclidiana(const Usuario& usuario1, const Usuario& usuario2) {
-    vector<int> v1(numCanciones, 0);
-    vector<int> v2(numCanciones, 0);
-
-    for (int c : usuario1.cancionesEscuchadas)
-        if (c < numCanciones) v1[c] = 1;
-
-    for (int c : usuario2.cancionesEscuchadas)
-        if (c < numCanciones) v2[c] = 1;
-
+double LSH::calcularDistanciaEuclidiana(const Usuario& u1, const Usuario& u2) {
     double suma = 0.0;
-    for (int i = 0; i < numCanciones; ++i)
-        suma += pow(v1[i] - v2[i], 2);
+    unordered_set<int> todas_canciones = u1.cancionesEscuchadas;
+    todas_canciones.insert(u2.cancionesEscuchadas.begin(), u2.cancionesEscuchadas.end());
 
+    for (int c : todas_canciones) {
+        if (c < numCanciones) {
+            bool enU1 = u1.cancionesEscuchadas.count(c);
+            bool enU2 = u2.cancionesEscuchadas.count(c);
+            suma += pow((enU1 ? 1 : 0) - (enU2 ? 1 : 0), 2);
+        }
+    }
     return sqrt(suma);
 }
 
@@ -72,61 +117,58 @@ void LSH::buscarSimilares(int id) {
         cout << "Usuario no encontrado\n";
         return;
     }
+    int firma = (*usuariosRef)[id].firma;
+    const auto& candidatos = buckets[firma];
 
-    int firma = calcularFirma((*usuariosRef)[id]);
-    auto& candidatos = buckets[firma];
-
-    cout << "--- Usuarios similares a " << id << " ---\n";
-    for (int otro : candidatos) {
-        if (otro == id) continue;
-        int comunes = contarEnComun((*usuariosRef)[id], (*usuariosRef)[otro]);
+    cout << "--- Usuarios similares a " << id << " (misma firma LSH) ---\n";
+    int similaresEncontrados = 0;
+    for (int otro_id : candidatos) {
+        if (otro_id == id) continue;
+        int comunes = contarEnComun((*usuariosRef)[id], (*usuariosRef)[otro_id]);
         if (comunes > 0) {
-            double distancia = calcularDistanciaEuclidiana((*usuariosRef)[id], (*usuariosRef)[otro]);
-            cout << "Usuario " << otro << " | " << comunes << " canciones comunes | Distancia: " << distancia << "\n";
+            double dist = calcularDistanciaEuclidiana((*usuariosRef)[id], (*usuariosRef)[otro_id]);
+            cout << "Usuario " << otro_id << " | " << comunes << " canciones en comun | Distancia: " << dist << "\n";
+            similaresEncontrados++;
         }
     }
-
-    if (candidatos.size() <= 1)
-        cout << "No se encontraron usuarios similares\n";
+    if (similaresEncontrados == 0) cout << "No se encontraron usuarios similares en el mismo bucket.\n";
 }
 
-double LSH::calcularDistanciaEntreUsuarios(int usuario1, int usuario2) {
-    if (!usuariosRef->count(usuario1) || !usuariosRef->count(usuario2)) {
-        throw runtime_error("Error: uno de los usuarios no existe.");
+double LSH::calcularDistanciaEntreUsuarios(int u1_id, int u2_id) {
+    if (!usuariosRef->count(u1_id) || !usuariosRef->count(u2_id)) {
+        throw runtime_error("Error: uno o ambos usuarios no existen.");
     }
-    return calcularDistanciaEuclidiana((*usuariosRef)[usuario1], (*usuariosRef)[usuario2]);
+    return calcularDistanciaEuclidiana((*usuariosRef)[u1_id], (*usuariosRef)[u2_id]);
 }
 
 vector<int> LSH::obtenerCancionesRecomendadas(int usuarioID, int numRecomendaciones) {
-    vector<int> recomendaciones;
-
     if (!usuariosRef->count(usuarioID)) {
         cout << "Usuario no encontrado\n";
-        return recomendaciones;
+        return {};
     }
 
-    int firma = calcularFirma((*usuariosRef)[usuarioID]);
-    auto& candidatos = buckets[firma];
+    int firma = (*usuariosRef)[usuarioID].firma;
+    const auto& candidatos = buckets[firma];
     const auto& cancionesUsuario = (*usuariosRef)[usuarioID].cancionesEscuchadas;
 
-    unordered_map<int, int> cancionesCandidatas;
+    unordered_map<int, int> conteoCanciones;
     for (int otroID : candidatos) {
         if (otroID == usuarioID) continue;
-        for (int cID : (*usuariosRef)[otroID].cancionesEscuchadas) {
-            if (!cancionesUsuario.count(cID)) {
-                cancionesCandidatas[cID]++;
+        for (int cancionID : (*usuariosRef)[otroID].cancionesEscuchadas) {
+            if (cancionesUsuario.find(cancionID) == cancionesUsuario.end()) {
+                conteoCanciones[cancionID]++;
             }
         }
     }
 
-    vector<pair<int, int>> ordenadas(cancionesCandidatas.begin(), cancionesCandidatas.end());
-    sort(ordenadas.begin(), ordenadas.end(), [](auto& a, auto& b) {
+    vector<pair<int, int>> ordenadas(conteoCanciones.begin(), conteoCanciones.end());
+    sort(ordenadas.begin(), ordenadas.end(), [](const auto& a, const auto& b) {
         return a.second > b.second;
     });
 
-    for (int i = 0; i < min(numRecomendaciones, (int)ordenadas.size()); ++i)
+    vector<int> recomendaciones;
+    for (int i = 0; i < min((int)ordenadas.size(), numRecomendaciones); ++i) {
         recomendaciones.push_back(ordenadas[i].first);
-
+    }
     return recomendaciones;
 }
-
