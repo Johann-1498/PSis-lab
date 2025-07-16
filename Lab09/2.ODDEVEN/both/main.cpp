@@ -1,9 +1,9 @@
 #include "oddtrace.h"
 
 int main(int argc, char* argv[]) {
-    int n;
+    // Código principal aquí
+    int n, num_procs, num_threads;
     char g_i;
-    int num_procs, num_threads;
     int* a;
 
     Get_args(argc, argv, &n, &g_i, &num_procs, &num_threads);
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
         Read_list(a, n);
     }
 
-    Odd_even_sort(a, n);
+    Odd_even_sort(a, n, num_procs, num_threads);
 
     Print_list(a, n, "Lista ordenada");
     
