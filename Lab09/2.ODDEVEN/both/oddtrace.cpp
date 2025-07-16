@@ -84,7 +84,7 @@ void Phase_process(int* arr, int n, int phase, int num_threads) {
 }
 
 void Odd_even_sort(int a[], int n) {
-    int num_procs = 2;
+    int num_procs = 8;
     int num_threads = 2;
     
     // Crear memoria compartida
@@ -99,7 +99,7 @@ void Odd_even_sort(int a[], int n) {
     std::memcpy(shared_arr, a, n * sizeof(int));
     
     for (int phase = 0; phase < n; phase++) {
-        printf("Fase %d (%s):\n", phase, (phase % 2 == 0) ? "par" : "impar");
+        //printf("Fase %d (%s):\n", phase, (phase % 2 == 0) ? "par" : "impar");
         
         for (int p = 0; p < num_procs; p++) {
             pid_t pid = fork();
@@ -116,12 +116,12 @@ void Odd_even_sort(int a[], int n) {
         while (wait(NULL) > 0);
         
         // Mostrar estado actual
-        printf("Estado actual: [");
-        for (int j = 0; j < n; j++) {
+        //printf("Estado actual: [");
+        /*for (int j = 0; j < n; j++) {
             printf("%d", shared_arr[j]);
             if (j < n-1) printf(", ");
-        }
-        printf("]\n\n");
+        }*/
+        //printf("]\n\n");
     }
     
     std::memcpy(a, shared_arr, n * sizeof(int));

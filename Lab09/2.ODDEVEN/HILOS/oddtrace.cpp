@@ -91,13 +91,13 @@ void Read_list(int a[], int n) {
 void Odd_even_sort(int a[], int n) {
     // Crear pool de hilos (número de hilos = número de núcleos - 1)
     unsigned int num_threads = std::thread::hardware_concurrency() - 1;
-    if (num_threads == 0) num_threads = 1;  // Mínimo 1 hilo
+    if (num_threads == 0) num_threads = 4;  // Mínimo 1 hilo
     ThreadPool pool(num_threads);
     
     std::mutex mtx;
     
     for (int phase = 0; phase < n; phase++) {
-        printf("Fase %d (%s):\n", phase, (phase % 2 == 0) ? "par" : "impar");
+        //printf("Fase %d (%s):\n", phase, (phase % 2 == 0) ? "par" : "impar");
         
         if (phase % 2 == 0) { // Fase par
             for (int i = 1; i < n; i += 2) {
@@ -109,7 +109,7 @@ void Odd_even_sort(int a[], int n) {
                         a[i-1] = temp;
                     }
                 });
-                printf("  Comparando [%d]=%d y [%d]=%d\n", i-1, a[i-1], i, a[i]);
+                //printf("  Comparando [%d]=%d y [%d]=%d\n", i-1, a[i-1], i, a[i]);
             }
         } else { // Fase impar
             for (int i = 1; i < n-1; i += 2) {
@@ -121,7 +121,7 @@ void Odd_even_sort(int a[], int n) {
                         a[i+1] = temp;
                     }
                 });
-                printf("  Comparando [%d]=%d y [%d]=%d\n", i, a[i], i+1, a[i+1]);
+                //printf("  Comparando [%d]=%d y [%d]=%d\n", i, a[i], i+1, a[i+1]);
             }
         }
         
@@ -132,11 +132,11 @@ void Odd_even_sort(int a[], int n) {
         }
 
         // Mostrar estado actual
-        printf("  Estado actual: [");
-        for (int j = 0; j < n; j++) {
+        //printf("  Estado actual: [");
+        /*for (int j = 0; j < n; j++) {
             printf("%d", a[j]);
             if (j < n-1) printf(", ");
         }
-        printf("]\n\n");
+        printf("]\n\n");*/
     }
 }
